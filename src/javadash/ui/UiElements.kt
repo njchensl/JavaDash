@@ -1,0 +1,169 @@
+package javadash.ui
+
+import javadash.Main
+import java.awt.*
+import java.awt.event.MouseListener
+
+/**
+ * checks the parameter for illegal type
+ *
+ * @param d the type to check
+ */
+fun checkParameterNotOfIllegalType(d: Displayable) {
+    if (d is SceneLayer || d is Scene) {
+        throw UnsupportedElementException()
+    }
+}
+
+/**
+ * @return the location of the mouse as a point
+ */
+fun getMouseLocation(): Point {
+    return MouseInfo.getPointerInfo().location;
+}
+
+interface Displayable {
+    fun paint(g2d: Graphics2D);
+}
+
+interface CanInteractWithMouse {
+    fun mouseIsInside(): Boolean
+    fun mouseHasEntered(): Boolean
+    fun mouseHasExited(): Boolean
+    fun checkMousePosition()
+}
+
+/**
+ * All UI elements inherit from this class
+ */
+abstract class AbstractUiElement(var x: Int, var y: Int) : Displayable {
+    abstract override fun paint(g2d: Graphics2D)
+}
+
+/**
+ * A scene layer is a collection of
+ */
+class SceneLayer : Displayable {
+    private val elements: MutableList<Displayable>
+
+    init {
+        elements = ArrayList()
+    }
+
+    override fun paint(g2d: Graphics2D) {
+        elements.forEach {
+            it.paint(g2d)
+        }
+    }
+
+    fun addElement(d: Displayable) {
+        checkParameterNotOfIllegalType(d)
+        elements.add(d)
+    }
+}
+
+class UnsupportedElementException : Exception()
+
+/**
+ * A scene is a collection of scene layers
+ */
+class Scene : Displayable {
+    private val layers = Array(10) {
+        return@Array SceneLayer()
+    }
+
+    override fun paint(g2d: Graphics2D) {
+        layers.reversed().forEach {
+            it.paint(g2d)
+        }
+    }
+
+    fun getLayer(x: Int): SceneLayer {
+        return layers[x]
+    }
+
+    fun addElement(layer: Int, d: Displayable) {
+        layers[layer].addElement(d)
+    }
+}
+
+open class Rectangle(
+    x: Int,
+    y: Int,
+    var width: Int,
+    var height: Int,
+    var backgroundColor: Color? = null
+) : AbstractUiElement(x, y), Displayable {
+
+    override fun paint(g2d: Graphics2D) {
+        // draw background
+        if (backgroundColor != null) {
+            g2d.color = backgroundColor
+            g2d.fillRect(x, y, width, height)
+        }
+    }
+}
+
+open class Button(
+    x: Int,
+    y: Int,
+    width: Int,
+    height: Int,
+    var text: String = "",
+    backgroundColor: Color = Color.LIGHT_GRAY,
+    var fontColor: Color = Color.BLACK,
+    var font: Font = Font("Arial", Font.PLAIN, 15),
+    var textLocationOffset: Point = Point((width / 2 - text.length * font.size / 3.9 + 3).toInt(), height / 2 + font.size / 3 + 1)
+) : Rectangle(x, y, width, height, backgroundColor), Displayable, CanInteractWithMouse {
+
+    var mouseListeners: MutableList<MouseListener> = ArrayList()
+
+    override fun paint(g2d: Graphics2D) {
+        if (backgroundColor != null) {
+            g2d.color = if (!mouseIsInside()) backgroundColor else Color(backgroundColor!!.red - 50, backgroundColor!!.green - 50, backgroundColor!!.blue - 50)
+            g2d.fillRect(x, y, width, height)
+        }
+        g2d.color = fontColor
+        g2d.font = font
+        g2d.drawString(text, x + textLocationOffset.x, y + textLocationOffset.y)
+    }
+
+    override fun mouseIsInside(): Boolean {
+        val p = getMouseLocation()
+        return checkPointInsideElement(p)
+    }
+
+    private fun checkPointInsideElement(p: Point): Boolean {
+        return p.x >= x && p.x <= x + width && p.y >= y && p.y <= y + height
+    }
+
+    override fun mouseHasEntered(): Boolean {
+        return checkPointInsideElement(getMouseLocation()) && !checkPointInsideElement(Main.MAIN_FRAME.previousMouseLocation)
+    }
+
+    override fun mouseHasExited(): Boolean {
+        return !checkPointInsideElement(getMouseLocation()) && checkPointInsideElement(Main.MAIN_FRAME.previousMouseLocation)
+    }
+
+    override fun checkMousePosition() {
+        // TODO
+        if (mouseHasEntered()) {
+            println("Entered")
+        }
+        if (mouseHasExited()) {
+            println("Exited")
+        }
+    }
+
+    fun addMouseListener(ml: MouseListener) {
+        mouseListeners.add(ml)
+    }
+
+    fun removeAllMouseListeners(ml: MouseListener) {
+        mouseListeners.clear()
+    }
+
+    fun getMouseListeners(): Array<MouseListener> {
+        return mouseListeners.toTypedArray()
+    }
+}
