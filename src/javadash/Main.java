@@ -1,6 +1,7 @@
 package javadash;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,5 +12,16 @@ public class Main {
         }
     }
 
-    public final static MainFrame MAIN_FRAME = new MainFrame();
+    public final static MainFrame MAIN_FRAME;
+
+    static {
+
+        MAIN_FRAME = new MainFrame();
+        /*
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        device.setFullScreenWindow(MAIN_FRAME);
+        MAIN_FRAME.setVisible(true);
+
+         */
+    }
 }

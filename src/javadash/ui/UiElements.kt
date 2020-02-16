@@ -2,7 +2,7 @@ package javadash.ui
 
 import javadash.Main
 import java.awt.*
-import java.awt.event.MouseListener
+import java.awt.event.*
 
 /**
  * checks the parameter for illegal type
@@ -31,6 +31,9 @@ interface CanInteractWithMouse {
     fun mouseHasEntered(): Boolean
     fun mouseHasExited(): Boolean
     fun checkMousePosition()
+    fun mouseClicked(e: MouseEvent?)
+    fun mousePressed(e: MouseEvent?)
+    fun mouseReleased(e: MouseEvent?)
 }
 
 /**
@@ -41,7 +44,7 @@ abstract class AbstractUiElement(var x: Int, var y: Int) : Displayable {
 }
 
 /**
- * A scene layer is a collection of
+ * A scene layer is a collection of scene elements
  */
 class SceneLayer : Displayable {
     private val elements: MutableList<Displayable>
@@ -60,6 +63,35 @@ class SceneLayer : Displayable {
         checkParameterNotOfIllegalType(d)
         elements.add(d)
     }
+
+    fun addAll(vararg d: Displayable) {
+        elements.addAll(d)
+    }
+
+    fun mouseClicked(e: MouseEvent?) {
+        // transfer the event downstream
+        elements.forEach {
+            if (it is CanInteractWithMouse) {
+                it.mouseClicked(e)
+            }
+        }
+    }
+
+    fun mousePressed(e: MouseEvent?) {
+        elements.forEach {
+            if (it is CanInteractWithMouse) {
+                it.mousePressed(e)
+            }
+        }
+    }
+
+    fun mouseReleased(e: MouseEvent?) {
+        elements.forEach {
+            if (it is CanInteractWithMouse) {
+                it.mouseReleased(e)
+            }
+        }
+    }
 }
 
 class UnsupportedElementException : Exception()
@@ -67,10 +99,11 @@ class UnsupportedElementException : Exception()
 /**
  * A scene is a collection of scene layers
  */
-class Scene : Displayable {
-    private val layers = Array(10) {
+open class Scene : Displayable {
+    protected val layers = Array(10) {
         return@Array SceneLayer()
     }
+    protected val keyListeners = ArrayList<KeyListener>()
 
     override fun paint(g2d: Graphics2D) {
         layers.reversed().forEach {
@@ -84,6 +117,55 @@ class Scene : Displayable {
 
     fun addElement(layer: Int, d: Displayable) {
         layers[layer].addElement(d)
+    }
+
+    fun mouseClicked(e: MouseEvent?) {
+        // transfer the event downstream to the layers
+        layers.forEach {
+            it.mouseClicked(e)
+        }
+    }
+
+    fun mousePressed(e: MouseEvent?) {
+        layers.forEach {
+            it.mousePressed(e)
+        }
+    }
+
+    fun mouseReleased(e: MouseEvent?) {
+        layers.forEach {
+            it.mouseReleased(e)
+        }
+    }
+
+    fun keyPressed(e: KeyEvent?) {
+        keyListeners.forEach {
+            it.keyPressed(e)
+        }
+    }
+
+    fun keyTyped(e: KeyEvent?) {
+        keyListeners.forEach {
+            it.keyTyped(e)
+        }
+    }
+
+    fun keyReleased(e: KeyEvent?) {
+        keyListeners.forEach {
+            it.keyReleased(e)
+        }
+    }
+
+    fun addKeyListener(keyListener: KeyListener) {
+        keyListeners.add(keyListener)
+    }
+
+    fun removeAllKeyListeners() {
+        keyListeners.clear()
+    }
+
+    fun getKeyListeners(): Array<KeyListener> {
+        return keyListeners.toTypedArray()
     }
 }
 
@@ -111,21 +193,38 @@ open class Button(
     height: Int,
     var text: String = "",
     backgroundColor: Color = Color.LIGHT_GRAY,
+    var pressedColor: Color = Color.GRAY,
     var fontColor: Color = Color.BLACK,
     var font: Font = Font("Arial", Font.PLAIN, 15),
-    var textLocationOffset: Point = Point((width / 2 - text.length * font.size / 3.9 + 3).toInt(), height / 2 + font.size / 3 + 1)
+    var textLocationOffset: Point = Point(
+        (width / 2 - text.length * font.size / 3.9 + 3).toInt(),
+        height / 2 + font.size / 3 + 1
+    ),
+    var textLocationAdditionalOffset: Point = Point(0, 0)
 ) : Rectangle(x, y, width, height, backgroundColor), Displayable, CanInteractWithMouse {
 
     var mouseListeners: MutableList<MouseListener> = ArrayList()
+    protected var pressed = false
 
     override fun paint(g2d: Graphics2D) {
         if (backgroundColor != null) {
-            g2d.color = if (!mouseIsInside()) backgroundColor else Color(backgroundColor!!.red - 50, backgroundColor!!.green - 50, backgroundColor!!.blue - 50)
+            g2d.color = if (!mouseIsInside()) backgroundColor else Color(
+                backgroundColor!!.red - 50,
+                backgroundColor!!.green - 50,
+                backgroundColor!!.blue - 50
+            )
+            if (pressed) {
+                g2d.color = pressedColor
+            }
             g2d.fillRect(x, y, width, height)
         }
         g2d.color = fontColor
         g2d.font = font
-        g2d.drawString(text, x + textLocationOffset.x, y + textLocationOffset.y)
+        g2d.drawString(
+            text,
+            x + textLocationOffset.x + textLocationAdditionalOffset.x,
+            y + textLocationOffset.y + textLocationAdditionalOffset.y
+        )
     }
 
     override fun mouseIsInside(): Boolean {
@@ -138,20 +237,46 @@ open class Button(
     }
 
     override fun mouseHasEntered(): Boolean {
-        return checkPointInsideElement(getMouseLocation()) && !checkPointInsideElement(Main.MAIN_FRAME.previousMouseLocation)
+        return checkPointInsideElement(getMouseLocation()) && !checkPointInsideElement(
+            Main.MAIN_FRAME.previousMouseLocation
+        )
     }
 
     override fun mouseHasExited(): Boolean {
-        return !checkPointInsideElement(getMouseLocation()) && checkPointInsideElement(Main.MAIN_FRAME.previousMouseLocation)
+        return !checkPointInsideElement(getMouseLocation()) && checkPointInsideElement(
+            Main.MAIN_FRAME.previousMouseLocation
+        )
     }
 
     override fun checkMousePosition() {
-        // TODO
-        if (mouseHasEntered()) {
-            println("Entered")
+    }
+
+    override fun mouseClicked(e: MouseEvent?) {
+        if (mouseIsInside()) {
+            // invoke the mouse listeners
+            mouseListeners.forEach {
+                it.mouseClicked(e)
+            }
         }
-        if (mouseHasExited()) {
-            println("Exited")
+    }
+
+    override fun mousePressed(e: MouseEvent?) {
+        if (mouseIsInside()) {
+            pressed = true
+            // invoke the mouse listeners
+            mouseListeners.forEach {
+                it.mousePressed(e)
+            }
+        }
+    }
+
+    override fun mouseReleased(e: MouseEvent?) {
+        pressed = false
+        if (mouseIsInside()) {
+            // invoke the mouse listeners
+            mouseListeners.forEach {
+                it.mouseReleased(e)
+            }
         }
     }
 
@@ -159,11 +284,39 @@ open class Button(
         mouseListeners.add(ml)
     }
 
-    fun removeAllMouseListeners(ml: MouseListener) {
+    fun addActionListener(al: Runnable) {
+        mouseListeners.add(object : MouseListener {
+            override fun mouseReleased(e: MouseEvent?) {}
+            override fun mouseEntered(e: MouseEvent?) {}
+            override fun mouseClicked(e: MouseEvent?) {
+                al.run()
+            }
+
+            override fun mouseExited(e: MouseEvent?) {}
+            override fun mousePressed(e: MouseEvent?) {}
+        })
+    }
+
+    fun removeAllMouseListeners() {
         mouseListeners.clear()
     }
 
     fun getMouseListeners(): Array<MouseListener> {
         return mouseListeners.toTypedArray()
+    }
+}
+
+class Label(
+    x: Int,
+    y: Int,
+    var text: String = "",
+    var fontColor: Color = Color.WHITE,
+    var font: Font = Font("Arial", Font.PLAIN, 15)
+) : AbstractUiElement(x, y) {
+
+    override fun paint(g2d: Graphics2D) {
+        g2d.color = fontColor
+        g2d.font = font
+        g2d.drawString(text, x, y)
     }
 }
