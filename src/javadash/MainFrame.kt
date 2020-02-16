@@ -6,22 +6,43 @@ import javadash.ui.Rectangle
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
+import java.util.*
 import javax.swing.*
+import javax.swing.Timer
 import kotlin.system.exitProcess
 
 
 class MainFrame : JFrame() {
     val windowDimension: Dimension
+    private val _scenes = Stack<Scene>()
     private val timer: Timer
     var isRunning: Boolean
         private set
-    var activeScene: Scene = Scene()
+    var activeScene: Scene
+        get() {
+            return _scenes.peek()
+        }
+        set(value) {
+            if (_scenes.size >= 1) {
+                if (_scenes.peek() != value) {
+                    _scenes.push(value)
+                }
+            } else {
+                _scenes.push(value)
+            }
+        }
     var previousMouseLocation: Point = MouseInfo.getPointerInfo().location
     private val bf: BufferedImage
     private val canvas: Canvas
 
     override fun paint(g: Graphics) {
         paint(g as Graphics2D)
+    }
+
+    fun popScene() {
+        if (_scenes.size > 1) {
+            _scenes.pop()
+        }
     }
 
     private fun paint(g: Graphics2D) {
@@ -36,16 +57,16 @@ class MainFrame : JFrame() {
     }
 
     init {
+        activeScene = Scene()
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
         addWindowListener(object : WindowListener {
             override fun windowOpened(e: WindowEvent) {}
             override fun windowClosing(e: WindowEvent) {
-                if (activeScene is OkCancelScene) {
-                    exitProcess(0)
-                } else {
-                    activeScene = OkCancelScene(activeScene, Runnable {
-                        exitProcess(0)
-                    }, "Alert", "Are you sure you want to exit?")
+                if (activeScene !is OkCancelScene) {
+                    OptionPane.showOkCancelDialog(
+                        Runnable { exitProcess(0) },
+                        message = "Are you sure you want to exit?"
+                    )
                 }
             }
 
@@ -125,5 +146,10 @@ class MainFrame : JFrame() {
             JOptionPane.showMessageDialog(null, "Hello World")
         })
         activeScene.addElement(0, btn)
+
+        Thread {
+            Thread.sleep(1000)
+            OptionPane.showMessageDialog("Hello", "World")
+        }.start()
     }
 }

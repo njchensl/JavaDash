@@ -7,7 +7,19 @@ import java.awt.Point
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 
-open class OkScene(private val previousScene: Scene) : Scene() {
+object OptionPane {
+    @JvmStatic
+    fun showMessageDialog(title: String = "Alert", message: String = "") {
+        Main.MAIN_FRAME.activeScene = OkScene(title, message)
+    }
+
+    @JvmStatic
+    fun showOkCancelDialog(okBtnAction: Runnable = Runnable {}, title: String = "Alert", message: String = "") {
+        Main.MAIN_FRAME.activeScene = OkCancelScene(okBtnAction, title, message)
+    }
+}
+
+open class OkScene(title: String = "", message: String = "") : Scene() {
     init {
         val dimension = Main.MAIN_FRAME.windowDimension
         // background
@@ -22,7 +34,7 @@ open class OkScene(private val previousScene: Scene) : Scene() {
             textLocationAdditionalOffset = Point(-7, 0)
         )
         val okBtnAction = Runnable {
-            Main.MAIN_FRAME.activeScene = previousScene
+            Main.MAIN_FRAME.popScene()
         }
         okBtn.addActionListener(okBtnAction)
         layers[0].addElement(okBtn)
@@ -38,14 +50,17 @@ open class OkScene(private val previousScene: Scene) : Scene() {
                 }
             }
         })
+        // show the title and the message
+        val lblTitle = Label(80, 150, title, font = Font("Arial", Font.PLAIN, 80))
+        val lblMessage = Label(80, 200, message, font = Font("Arial", Font.PLAIN, 20))
+        layers[0].addAll(lblTitle, lblMessage)
     }
 }
 
 open class OkCancelScene(
-    private val previousScene: Scene,
     private val okBtnAction: Runnable,
-    title: String,
-    message: String
+    title: String = "",
+    message: String = ""
 ) : Scene() {
 
     init {
@@ -73,7 +88,7 @@ open class OkCancelScene(
             textLocationAdditionalOffset = Point(-3, 0)
         )
         val cancelBtnAction = Runnable {
-            Main.MAIN_FRAME.activeScene = previousScene
+            Main.MAIN_FRAME.popScene()
         }
         cancelBtn.addActionListener(cancelBtnAction)
         layers[0].addElement(cancelBtn)
