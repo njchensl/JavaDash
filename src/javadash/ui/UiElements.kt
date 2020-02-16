@@ -22,10 +22,16 @@ fun getMouseLocation(): Point {
     return MouseInfo.getPointerInfo().location;
 }
 
+/**
+ * all objects that can be drawn on the screen should implement this interface
+ */
 interface Displayable {
     fun paint(g2d: Graphics2D);
 }
 
+/**
+ * objects that can interact with the mouse should implement this interface
+ */
 interface CanInteractWithMouse {
     fun mouseIsInside(): Boolean
     fun mouseHasEntered(): Boolean

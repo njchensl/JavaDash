@@ -16,8 +16,6 @@ class MainFrame : JFrame() {
     val windowDimension: Dimension
     private val _scenes = Stack<Scene>()
     private val timer: Timer
-    var isRunning: Boolean
-        private set
     var activeScene: Scene
         get() {
             return _scenes.peek()
@@ -87,7 +85,6 @@ class MainFrame : JFrame() {
         canvas.createBufferStrategy(2)
         this.pack()
         this.bf = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        this.isRunning = true
         val timer = ActionListener {
             /*
             this.paint(bf.graphics)
