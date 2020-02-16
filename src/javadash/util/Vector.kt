@@ -34,10 +34,12 @@ data class Vector(val x: Double = 0.0, val y: Double = 0.0) {
     }
 
     fun multiply(x: Double): Vector {
-        return Vector(x * this.x, x * y)
+        return Vector(x * this.x, x * this.y)
     }
 
     operator fun times(x: Number): Vector = multiply(x.toDouble())
+
+    operator fun div(x: Number): Vector = Vector(this.x / x.toDouble(), this.y / x.toDouble())
 
     fun getCartesianForm(): String = "[$x, $y]"
 
@@ -59,5 +61,8 @@ data class Vector(val x: Double = 0.0, val y: Double = 0.0) {
         fun getAngle(u: Vector, v: Vector): Double {
             return acos((u dot v) / (u.magnitude * v.magnitude))
         }
+
+        @JvmStatic
+        val ZeroVector = Vector(0, 0)
     }
 }
