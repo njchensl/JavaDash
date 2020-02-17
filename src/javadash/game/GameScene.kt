@@ -6,6 +6,7 @@ import javadash.ui.Scene
 import javadash.util.Vector
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.Graphics2D
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.Timer
@@ -51,6 +52,15 @@ class GameScene : Scene() {
                 player.keyReleased(e)
             }
         })
+    }
+
+    override fun paint(g2d: Graphics2D) {
+        // paint background before transformation
+        layers[9].paint(g2d)
+        val transform = g2d.transform
+        transform.translate(-player.pos.x + 300, 0.0)
+        g2d.transform = transform
+        paintWithoutBackground(g2d)
     }
 
     private fun rebuildIndex() {

@@ -118,6 +118,12 @@ open class Scene : Displayable {
         }
     }
 
+    fun paintWithoutBackground(g2d: Graphics2D) {
+        for (i in 8 downTo 0) {
+            layers[i].paint(g2d)
+        }
+    }
+
     fun getLayer(x: Int): SceneLayer {
         return layers[x]
     }
