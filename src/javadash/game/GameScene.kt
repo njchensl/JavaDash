@@ -11,8 +11,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.Timer
 
-// TODO give the programmer a way to add objects to the class outside the class (external api)
-//  (while adding things, make sure that the index is also updated!!!)
+
 class GameScene : Scene() {
     private lateinit var timer: Timer
     private val player: Player
@@ -46,6 +45,14 @@ class GameScene : Scene() {
 
             override fun keyPressed(e: KeyEvent?) {
                 player.keyPressed(e)
+                // pause
+                if (e!!.keyCode == KeyEvent.VK_ESCAPE) {
+                    if (timer.isRunning) {
+                        timer.stop()
+                    } else {
+                        timer.restart()
+                    }
+                }
             }
 
             override fun keyReleased(e: KeyEvent?) {
@@ -58,7 +65,7 @@ class GameScene : Scene() {
         // paint background before transformation
         layers[9].paint(g2d)
         val transform = g2d.transform
-        transform.translate(-player.pos.x + 300, 0.0)
+        transform.translate((-player.pos.x.toInt() + 300).toDouble(), 0.0)
         g2d.transform = transform
         paintWithoutBackground(g2d)
     }

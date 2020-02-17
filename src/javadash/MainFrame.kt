@@ -149,9 +149,18 @@ class MainFrame : JFrame() {
         Thread {
             Thread.sleep(1000)
             activeScene = GameScene()
-            val gs = GroundSegment(0, 500, 1000, 500)
+            var gs = GroundSegment(0, 500, 1000, 1000)
             gs.color = Color.BLUE
             activeScene.addElement(8, gs)
+
+            gs = GroundSegment(1000, 400, 100, 1000)
+            gs.color = Color.GREEN
+            activeScene.addElement(8, gs)
+
+            gs = GroundSegment(1100, 200, 1000, 1000)
+            gs.color = Color.MAGENTA
+            activeScene.addElement(8, gs)
+
             (activeScene as GameScene).start()
         }.start()
 
