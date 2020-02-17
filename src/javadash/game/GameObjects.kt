@@ -5,6 +5,7 @@ import javadash.util.Vector
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics2D
+import java.awt.event.KeyEvent
 
 /**
  * for all non player rigid body game objects
@@ -32,7 +33,7 @@ class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : Abstra
     private var playerMode: PlayerMode = DefaultPlayerMode()
 
     init {
-        acc = Vector(0, 500)
+        acc = Vector(0, 10000)
         vel = Vector(300, 0)
     }
 
@@ -50,6 +51,18 @@ class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : Abstra
 
     fun resolveCollision(collisionEvent: CollisionEvent) {
         playerMode.resolveCollision(collisionEvent)
+    }
+
+    fun keyPressed(e: KeyEvent?) {
+        playerMode.keyPressed(e)
+    }
+
+    fun keyReleased(e: KeyEvent?) {
+        playerMode.keyReleased(e)
+    }
+
+    fun keyTyped(e: KeyEvent?) {
+        playerMode.keyTyped(e)
     }
 }
 

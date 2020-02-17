@@ -6,6 +6,8 @@ import javadash.ui.Scene
 import javadash.util.Vector
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.Timer
 
 // TODO give the programmer a way to add objects to the class outside the class (external api)
@@ -13,7 +15,7 @@ import javax.swing.Timer
 class GameScene : Scene() {
     private lateinit var timer: Timer
     private val player: Player
-    private val refreshDelay: Int = 17
+    private val refreshDelay: Int = 8
     private val gameObjectList = ArrayList<AbstractGameObject>()
     private val rigidBodyList = ArrayList<RigidBody>()
 
@@ -34,6 +36,21 @@ class GameScene : Scene() {
         layers[0].addElement(player)
 
         rebuildIndex()
+
+        // key controller
+        addKeyListener(object : KeyListener {
+            override fun keyTyped(e: KeyEvent?) {
+                player.keyTyped(e)
+            }
+
+            override fun keyPressed(e: KeyEvent?) {
+                player.keyPressed(e)
+            }
+
+            override fun keyReleased(e: KeyEvent?) {
+                player.keyReleased(e)
+            }
+        })
     }
 
     private fun rebuildIndex() {
