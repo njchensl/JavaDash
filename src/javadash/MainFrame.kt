@@ -1,9 +1,8 @@
 package javadash
 
 import javadash.game.GameScene
+import javadash.game.GroundSegment
 import javadash.ui.*
-import javadash.ui.Button
-import javadash.ui.Rectangle
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -104,7 +103,7 @@ class MainFrame : JFrame() {
             paint(canvas.bufferStrategy.drawGraphics)
             canvas.bufferStrategy.show()
         }
-        this.timer = Timer(33, timer)
+        this.timer = Timer(17, timer)
         this.timer.start()
         canvas.addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent?) {
@@ -150,7 +149,9 @@ class MainFrame : JFrame() {
         Thread {
             Thread.sleep(1000)
             activeScene = GameScene()
-            Thread.sleep(0)
+            val gs = GroundSegment(0, 500, 1000, 500)
+            gs.color = Color.BLUE
+            activeScene.addElement(8, gs)
             (activeScene as GameScene).start()
         }.start()
 

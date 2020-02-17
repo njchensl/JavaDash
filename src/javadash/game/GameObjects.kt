@@ -31,6 +31,11 @@ abstract class AbstractGameObject(var pos: Vector, var fixed: Boolean = false, v
 class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : AbstractGameObject(pos) {
     private var playerMode: PlayerMode = DefaultPlayerMode()
 
+    init {
+        acc = Vector(0, 500)
+        vel = Vector(300, 0)
+    }
+
     override fun paint(g2d: Graphics2D) {
         g2d.color = Color.RED
         g2d.fillRect(pos.x.toInt(), pos.y.toInt(), dimension.width, dimension.height)
@@ -96,6 +101,21 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, w
  */
 class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, true), RigidBody {
     override fun detectCollision(player: Player): CollisionEvent? {
-        TODO("Not yet implemented")
+        val pos = player.pos
+        val dimension = player.dimension
+
+        // bottom
+        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+            if (pos.y <= this.pos.y + this.height) {
+                return CollisionEvent(player, CollisionSide.BOTTOM, this)
+            }
+        }
+        // left
+        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
+            if (pos.x >= this.pos.y) {
+                return CollisionEvent(player, CollisionSide.LEFT, this)
+            }
+        }
+        return null
     }
 }

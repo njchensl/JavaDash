@@ -1,6 +1,7 @@
 package javadash.game
 
 import javadash.Main
+import javadash.ui.Displayable
 import javadash.ui.Scene
 import javadash.util.Vector
 import java.awt.Color
@@ -12,7 +13,7 @@ import javax.swing.Timer
 class GameScene : Scene() {
     private lateinit var timer: Timer
     private val player: Player
-    private val refreshDelay: Int = 20
+    private val refreshDelay: Int = 17
     private val gameObjectList = ArrayList<AbstractGameObject>()
     private val rigidBodyList = ArrayList<RigidBody>()
 
@@ -29,30 +30,48 @@ class GameScene : Scene() {
         )
 
         // player
-        player = Player(Vector(100, 100), Dimension(100, 100))
-        player.acc = Vector(0, 200)
-        player.vel = Vector(200, -50)
+        player = Player(Vector(100, 100), Dimension(34, 34))
         layers[0].addElement(player)
 
-        // ground
-        val gs = GroundSegment(0, 500, 1000, 500)
-        gs.color = Color.BLUE
-        layers[8].addElement(gs)
+        rebuildIndex()
+    }
 
-        // build the index of objects, always comes last
+    private fun rebuildIndex() {
+        synchronized("gameObjectList") {
+            gameObjectList.clear()
+        }
+        synchronized(rigidBodyList) {
+            rigidBodyList.clear()
+        }
         for (i in 1..8) {
             layers[i].elements.forEach {
                 if (it is AbstractGameObject) {
-                    gameObjectList.add(it)
-                    if (it is RigidBody) {
-                        rigidBodyList.add(it)
-                    }
+                    indexGameObject(it)
                 }
             }
         }
     }
 
+    private fun indexGameObject(it: AbstractGameObject) {
+        synchronized(gameObjectList) {
+            gameObjectList.add(it)
+        }
+        if (it is RigidBody) {
+            synchronized(rigidBodyList) {
+                rigidBodyList.add(it)
+            }
+        }
+    }
+
+    override fun addElement(layer: Int, d: Displayable) {
+        layers[layer].addElement(d)
+        if (d is AbstractGameObject) {
+            indexGameObject(d)
+        }
+    }
+
     fun start() {
+        rebuildIndex()
         // add timer
         timer = Timer(refreshDelay) {
             detectCollision()

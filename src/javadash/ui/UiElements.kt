@@ -122,7 +122,7 @@ open class Scene : Displayable {
         return layers[x]
     }
 
-    fun addElement(layer: Int, d: Displayable) {
+    open fun addElement(layer: Int, d: Displayable) {
         layers[layer].addElement(d)
     }
 
