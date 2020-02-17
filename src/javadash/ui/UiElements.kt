@@ -1,6 +1,7 @@
 package javadash.ui
 
 import javadash.Main
+import javadash.game.GameScene
 import java.awt.*
 import java.awt.event.*
 
@@ -10,7 +11,7 @@ import java.awt.event.*
  * @param d the type to check
  */
 fun checkParameterNotOfIllegalType(d: Displayable) {
-    if (d is SceneLayer || d is Scene) {
+    if (d is SceneLayer || d is Scene || d is GameScene) {
         throw UnsupportedElementException()
     }
 }
@@ -53,7 +54,7 @@ abstract class AbstractUiElement(var x: Int, var y: Int) : Displayable {
  * A scene layer is a collection of scene elements
  */
 class SceneLayer : Displayable {
-    private val elements: MutableList<Displayable>
+    val elements: MutableList<Displayable>
 
     init {
         elements = ArrayList()

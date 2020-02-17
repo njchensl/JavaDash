@@ -3,13 +3,14 @@ package javadash.game
 import javadash.ui.Displayable
 import javadash.util.Vector
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.Graphics2D
 
 /**
  * for all non player rigid body game objects
  */
 interface RigidBody {
-    fun detectCollision(player: Player): Boolean
+    fun detectCollision(player: Player): CollisionEvent?
 }
 
 /**
@@ -27,12 +28,12 @@ abstract class AbstractGameObject(var pos: Vector, var fixed: Boolean = false, v
 /**
  * the player
  */
-class Player(pos: Vector) : AbstractGameObject(pos) {
-    var playerMode: PlayerMode = DefaultPlayerMode()
+class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : AbstractGameObject(pos) {
+    private var playerMode: PlayerMode = DefaultPlayerMode()
 
     override fun paint(g2d: Graphics2D) {
         g2d.color = Color.RED
-        g2d.fillRect(pos.x.toInt(), pos.y.toInt(), 20, 20)
+        g2d.fillRect(pos.x.toInt(), pos.y.toInt(), dimension.width, dimension.height)
     }
 
     /**
@@ -41,13 +42,17 @@ class Player(pos: Vector) : AbstractGameObject(pos) {
     override fun update(timeElapsed: Int) {
         playerMode.update(this, timeElapsed)
     }
+
+    fun resolveCollision(collisionEvent: CollisionEvent) {
+        playerMode.resolveCollision(collisionEvent)
+    }
 }
 
 open class Rectangle(
     x: Int,
     y: Int,
-    private var width: Int,
-    private var height: Int,
+    protected var width: Int,
+    protected var height: Int,
     fixed: Boolean = true,
     killer: Boolean = false
 ) :
@@ -66,8 +71,23 @@ open class Rectangle(
  * segment of the floor, top / left collision detections only
  */
 class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, true), RigidBody {
-    override fun detectCollision(player: Player): Boolean {
-        TODO("Not yet implemented")
+    override fun detectCollision(player: Player): CollisionEvent? {
+        val pos = player.pos
+        val dimension = player.dimension
+
+        // top
+        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+            if (pos.y + dimension.height >= this.pos.y) {
+                return CollisionEvent(player, CollisionSide.TOP, this)
+            }
+        }
+        // left
+        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
+            if (pos.x >= this.pos.y) {
+                return CollisionEvent(player, CollisionSide.LEFT, this)
+            }
+        }
+        return null
     }
 }
 
@@ -75,7 +95,7 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, w
  * segment of the ceiling, bottom / left collision detections only
  */
 class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, true), RigidBody {
-    override fun detectCollision(player: Player): Boolean {
+    override fun detectCollision(player: Player): CollisionEvent? {
         TODO("Not yet implemented")
     }
 }

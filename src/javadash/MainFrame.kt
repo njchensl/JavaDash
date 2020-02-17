@@ -1,5 +1,6 @@
 package javadash
 
+import javadash.game.GameScene
 import javadash.ui.*
 import javadash.ui.Button
 import javadash.ui.Rectangle
@@ -134,6 +135,7 @@ class MainFrame : JFrame() {
                 activeScene.keyReleased(e)
             }
         })
+        /*
         // test
         //this.activeScene.addElement(1, RectangularElement(0, 0, 100, 100, Color.RED))
         //this.activeScene.addElement(0, RectangularElement(25, 25, 50, 50, Color.BLACK))
@@ -143,10 +145,14 @@ class MainFrame : JFrame() {
             JOptionPane.showMessageDialog(null, "Hello World")
         })
         activeScene.addElement(0, btn)
+         */
 
         Thread {
             Thread.sleep(1000)
-            OptionPane.showMessageDialog("Hello", "World")
+            activeScene = GameScene()
+            Thread.sleep(0)
+            (activeScene as GameScene).start()
         }.start()
+
     }
 }

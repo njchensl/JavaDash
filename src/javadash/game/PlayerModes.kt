@@ -20,11 +20,14 @@ class DefaultPlayerMode : PlayerMode {
     /**
      * reserved for top collisions
      */
-    var sliding: Boolean = false
+    private var sliding: Boolean = false
+    private var slidingHeight: Int = 0
 
     override fun update(player: Player, timeElapsed: Int) {
+        //println(sliding)
         if (sliding) {
             player.vel = Vector(player.vel.x, 0)
+            player.pos = Vector(player.pos.x, slidingHeight - player.dimension.height) // sliding on the surface
         } else {
             val accWeighed = player.acc / 1000 * timeElapsed
             player.vel += accWeighed
@@ -37,6 +40,12 @@ class DefaultPlayerMode : PlayerMode {
     }
 
     override fun resolveCollision(collisionEvent: CollisionEvent) {
-        TODO("Not yet implemented")
+        if (collisionEvent.collisionSide == CollisionSide.TOP) {
+            // sliding
+            sliding = true
+            slidingHeight = collisionEvent.gameObject.pos.y.toInt()
+        }
+
+        // TODO
     }
 }
