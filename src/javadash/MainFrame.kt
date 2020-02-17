@@ -3,6 +3,7 @@ package javadash
 import javadash.game.GameScene
 import javadash.game.GroundSegment
 import javadash.ui.*
+import javadash.ui.Rectangle
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -55,7 +56,9 @@ class MainFrame : JFrame() {
     }
 
     init {
-        activeScene = Scene()
+        val blankScene = Scene()
+        blankScene.addElement(9, Rectangle(0 ,0, Int.MAX_VALUE, Int.MAX_VALUE, Color.BLACK))
+        activeScene = blankScene
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
         addWindowListener(object : WindowListener {
             override fun windowOpened(e: WindowEvent) {}

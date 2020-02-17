@@ -13,7 +13,7 @@ import javax.swing.Timer
 
 
 class GameScene : Scene() {
-    private lateinit var timer: Timer
+    lateinit var timer: Timer
     private val player: Player
     private val refreshDelay: Int = 8
     private val gameObjectList = ArrayList<AbstractGameObject>()

@@ -51,13 +51,16 @@ class DefaultPlayerMode : PlayerMode {
     }
 
     override fun resolveCollision(collisionEvent: CollisionEvent) {
+        if (collisionEvent.gameObject.isKiller) {
+            collisionEvent.player.kill()
+        }
         if (collisionEvent.collisionSide == CollisionSide.TOP) {
             // sliding
             sliding = true
             slidingHeight = collisionEvent.gameObject.pos.y.toInt()
+        } else if (collisionEvent.collisionSide == CollisionSide.LEFT) {
+            collisionEvent.player.kill()
         }
-
-        // TODO collision on other sides
     }
 
     override fun keyPressed(e: KeyEvent?) {

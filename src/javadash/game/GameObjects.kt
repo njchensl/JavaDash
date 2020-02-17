@@ -1,6 +1,7 @@
 package javadash.game
 
 import javadash.ui.Displayable
+import javadash.ui.OptionPane
 import javadash.util.Vector
 import java.awt.Color
 import java.awt.Dimension
@@ -17,7 +18,7 @@ interface RigidBody {
 /**
  * for all non-UI game objects
  */
-abstract class AbstractGameObject(var pos: Vector, var fixed: Boolean = false, var killer: Boolean = false) :
+abstract class AbstractGameObject(var pos: Vector, var isFixed: Boolean = false, var isKiller: Boolean = false) :
     Displayable {
     var vel = Vector.ZeroVector
     var acc = Vector.ZeroVector
@@ -34,7 +35,7 @@ class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : Abstra
 
     init {
         acc = Vector(0, 10000)
-        vel = Vector(300, 0)
+        vel = Vector(600, 0)
     }
 
     override fun paint(g2d: Graphics2D) {
@@ -64,6 +65,10 @@ class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : Abstra
     fun keyTyped(e: KeyEvent?) {
         playerMode.keyTyped(e)
     }
+
+    fun kill() {
+        OptionPane.showMessageDialog("Wasted")
+    }
 }
 
 open class Rectangle(
@@ -88,23 +93,22 @@ open class Rectangle(
 /**
  * segment of the floor, top / left collision detections only
  */
-class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, true), RigidBody {
+class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, false), RigidBody {
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
-
         // top
         if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y + dimension.height >= this.pos.y) {
+            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 30) {
                 return CollisionEvent(player, CollisionSide.TOP, this)
             }
         }
-        // left
         if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x >= this.pos.y) {
+            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
+
         return null
     }
 }
@@ -125,7 +129,7 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, 
         }
         // left
         if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x >= this.pos.y) {
+            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
