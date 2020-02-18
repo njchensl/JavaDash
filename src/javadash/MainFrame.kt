@@ -1,5 +1,6 @@
 package javadash
 
+import javadash.game.CeilingSegment
 import javadash.game.GameScene
 import javadash.game.GroundSegment
 import javadash.ui.*
@@ -163,6 +164,10 @@ class MainFrame : JFrame() {
             gs = GroundSegment(1100, 200, 1000, 1000)
             gs.color = Color.MAGENTA
             activeScene.addElement(8, gs)
+
+            val cs = CeilingSegment(500, -30, 300, 400)
+            cs.color = Color.BLUE
+            activeScene.addElement(8, cs)
 
             (activeScene as GameScene).start()
         }.start()

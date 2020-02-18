@@ -67,15 +67,15 @@ class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : Abstra
     }
 
     fun kill() {
-        OptionPane.showMessageDialog("Wasted")
+        OptionPane.showMessageDialog("Failed")
     }
 }
 
 open class Rectangle(
     x: Int,
     y: Int,
-    protected var width: Int,
-    protected var height: Int,
+    var width: Int,
+    var height: Int,
     fixed: Boolean = true,
     killer: Boolean = false
 ) :
@@ -99,10 +99,11 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, w
         val dimension = player.dimension
         // top
         if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 30) {
+            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 25) {
                 return CollisionEvent(player, CollisionSide.TOP, this)
             }
         }
+        // left
         if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
             if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
@@ -116,14 +117,14 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, w
 /**
  * segment of the ceiling, bottom / left collision detections only
  */
-class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, true), RigidBody {
+class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, false), RigidBody {
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
 
         // bottom
         if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y <= this.pos.y + this.height) {
+            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 10) {
                 return CollisionEvent(player, CollisionSide.BOTTOM, this)
             }
         }

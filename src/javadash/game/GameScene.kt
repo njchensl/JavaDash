@@ -32,7 +32,7 @@ class GameScene : Scene() {
         )
 
         // player
-        player = Player(Vector(100, 100), Dimension(34, 34))
+        player = Player(Vector(100, 400), Dimension(34, 34))
         layers[0].addElement(player)
 
         rebuildIndex()

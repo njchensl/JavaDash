@@ -27,7 +27,7 @@ fun getMouseLocation(): Point {
  * all objects that can be drawn on the screen should implement this interface
  */
 interface Displayable {
-    fun paint(g2d: Graphics2D);
+    fun paint(g2d: Graphics2D)
 }
 
 /**

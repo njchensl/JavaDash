@@ -51,15 +51,28 @@ class DefaultPlayerMode : PlayerMode {
     }
 
     override fun resolveCollision(collisionEvent: CollisionEvent) {
-        if (collisionEvent.gameObject.isKiller) {
-            collisionEvent.player.kill()
+        val player = collisionEvent.player
+        val gameObject = collisionEvent.gameObject
+        val collisionSide = collisionEvent.collisionSide
+        if (gameObject.isKiller) {
+            player.kill()
         }
-        if (collisionEvent.collisionSide == CollisionSide.TOP) {
-            // sliding
-            sliding = true
-            slidingHeight = collisionEvent.gameObject.pos.y.toInt()
-        } else if (collisionEvent.collisionSide == CollisionSide.LEFT) {
-            collisionEvent.player.kill()
+        when (collisionSide) {
+            CollisionSide.TOP -> {
+                // sliding
+                sliding = true
+                slidingHeight = gameObject.pos.y.toInt()
+            }
+            CollisionSide.LEFT -> {
+                player.kill()
+            }
+            CollisionSide.BOTTOM -> {
+                player.vel = Vector(player.vel.x, -player.vel.y)
+                if (gameObject is Rectangle) {
+                    player.pos = Vector(player.pos.x, gameObject.pos.y + gameObject.height)
+                }
+            }
+            else -> throw IllegalStateException()
         }
     }
 
