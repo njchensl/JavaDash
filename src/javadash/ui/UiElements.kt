@@ -122,7 +122,7 @@ open class Scene : Displayable {
     protected val layers = Array(10) {
         return@Array SceneLayer()
     }
-    protected val keyListeners = ArrayList<KeyListener>()
+    private val keyListeners = ArrayList<KeyListener>()
 
     override fun paint(g2d: Graphics2D) {
         layers.reversed().forEach {

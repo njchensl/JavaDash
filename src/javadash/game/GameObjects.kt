@@ -212,7 +212,7 @@ class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
         }
         // bottom
         if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 10) {
+            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 20) {
                 return CollisionEvent(player, CollisionSide.BOTTOM, this)
             }
         }

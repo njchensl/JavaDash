@@ -69,7 +69,7 @@ class DefaultPlayerMode : PlayerMode {
             CollisionSide.BOTTOM -> {
                 player.vel = Vector(player.vel.x, -player.vel.y)
                 if (gameObject is Rectangle) {
-                    player.pos = Vector(player.pos.x, gameObject.pos.y + gameObject.height)
+                    player.pos = Vector(player.pos.x, gameObject.pos.y + gameObject.height + 1)
                 }
             }
             else -> throw IllegalStateException()
