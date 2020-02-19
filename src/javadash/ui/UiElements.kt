@@ -61,8 +61,10 @@ class SceneLayer : Displayable {
     }
 
     override fun paint(g2d: Graphics2D) {
-        elements.forEach {
-            it.paint(g2d)
+        synchronized(elements) {
+            elements.forEach {
+                it.paint(g2d)
+            }
         }
     }
 

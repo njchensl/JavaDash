@@ -3,6 +3,7 @@ package javadash
 import javadash.game.CeilingSegment
 import javadash.game.GameScene
 import javadash.game.GroundSegment
+import javadash.game.Square
 import javadash.ui.*
 import javadash.ui.Rectangle
 import java.awt.*
@@ -172,6 +173,10 @@ class MainFrame : JFrame() {
             val cs = CeilingSegment(500, -30, 300, 400)
             cs.color = Color.BLUE
             activeScene.addElement(8, cs)
+
+            val block = Square(300, 0)
+            block.color = Color.BLUE
+            activeScene.addElement(8, block)
 
             (activeScene as GameScene).start()
         }.start()

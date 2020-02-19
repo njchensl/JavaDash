@@ -3,9 +3,7 @@ package javadash.game
 import javadash.ui.Displayable
 import javadash.ui.OptionPane
 import javadash.util.Vector
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Graphics2D
+import java.awt.*
 import java.awt.event.KeyEvent
 
 /**
@@ -30,7 +28,7 @@ abstract class AbstractGameObject(var pos: Vector, var isFixed: Boolean = false,
 /**
  * the player
  */
-class Player(pos: Vector, var dimension: Dimension = Dimension(20, 20)) : AbstractGameObject(pos) {
+class Player(pos: Vector, var dimension: Dimension = Dimension(34, 34)) : AbstractGameObject(pos) {
     private var playerMode: PlayerMode = DefaultPlayerMode()
 
     init {
@@ -77,10 +75,10 @@ open class Rectangle(
     var width: Int,
     var height: Int,
     fixed: Boolean = true,
-    killer: Boolean = false
+    killer: Boolean = false,
+    var color: Color = Color.BLACK
 ) :
     AbstractGameObject(Vector(x, y), fixed, killer) {
-    var color: Color = Color.BLACK
     override fun paint(g2d: Graphics2D) {
         g2d.color = color
         g2d.fillRect(pos.x.toInt(), pos.y.toInt(), width, height)
@@ -138,7 +136,65 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, 
     }
 }
 
-class Square(x: Int, y: Int) : Rectangle(x, y, 20, 20, true, false), RigidBody {
+class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
+    override fun paint(g2d: Graphics2D) {
+        super.paint(g2d)
+        // decoration
+
+        val x = pos.x.toFloat()
+        val y = pos.y.toFloat()
+
+        // backup paint
+        val originalPaint = g2d.paint
+
+        // top
+        g2d.paint = GradientPaint(x, y, Color.BLACK, x, y + 8, this.color)
+        val top = Polygon()
+        top.addPoint(x.toInt(), y.toInt())
+        top.addPoint(x.toInt() + 10, y.toInt() + 10)
+        top.addPoint(x.toInt() + width - 10, y.toInt() + 10)
+        top.addPoint(x.toInt() + width, y.toInt())
+        top.addPoint(x.toInt(), y.toInt())
+        g2d.fill(top)
+
+        // left
+        g2d.paint = GradientPaint(x, y, Color.BLACK, x + 8, y, this.color)
+        val left = Polygon()
+        left.addPoint(x.toInt(), y.toInt())
+        left.addPoint(x.toInt() + 10, y.toInt() + 10)
+        left.addPoint(x.toInt() + 10, y.toInt() + height - 10)
+        left.addPoint(x.toInt(), y.toInt() + height)
+        left.addPoint(x.toInt(), y.toInt())
+        g2d.fill(left)
+
+        // bottom
+        g2d.paint = GradientPaint(x, y + height, Color.BLACK, x, y + height - 8, this.color)
+        val bottom = Polygon()
+        bottom.addPoint(x.toInt(), (y + height).toInt())
+        bottom.addPoint((x + width).toInt(), (y + height).toInt())
+        bottom.addPoint((x + width - 10).toInt(), (y + height - 10).toInt())
+        bottom.addPoint((x + 10).toInt(), (y + height - 10).toInt())
+        bottom.addPoint(x.toInt(), (y + height).toInt())
+        g2d.fill(bottom)
+
+        // right
+        g2d.paint = GradientPaint(x + width, y, Color.BLACK, x + width - 10, y, this.color)
+        val right = Polygon()
+        right.addPoint((x + width).toInt(), y.toInt())
+        right.addPoint((x + width).toInt(), (y + height).toInt())
+        right.addPoint((x + width - 10).toInt(), (y + height - 10).toInt())
+        right.addPoint((x + width - 10).toInt(), (y + 10).toInt())
+        right.addPoint((x + width).toInt(), y.toInt())
+        g2d.fill(right)
+
+        // restore paint
+        g2d.paint = originalPaint
+
+        // white border
+        g2d.color = Color.WHITE
+        g2d.drawRect(x.toInt(), y.toInt(), width, height)
+    }
+
     override fun detectCollision(player: Player): CollisionEvent? {
         // TODO
 
