@@ -137,6 +137,34 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, 
 }
 
 class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
+    private val top: Polygon = Polygon()
+    private val left: Polygon = Polygon()
+    private val bottom: Polygon = Polygon()
+    private val right: Polygon = Polygon()
+
+    init {
+        top.addPoint(x, y)
+        top.addPoint(x + 10, y + 10)
+        top.addPoint(x + width - 10, y + 10)
+        top.addPoint(x + width, y)
+        top.addPoint(x, y)
+        left.addPoint(x, y)
+        left.addPoint(x + 10, y + 10)
+        left.addPoint(x + 10, y + height - 10)
+        left.addPoint(x, y + height)
+        left.addPoint(x, y)
+        bottom.addPoint(x, (y + height))
+        bottom.addPoint((x + width), (y + height))
+        bottom.addPoint((x + width - 10), (y + height - 10))
+        bottom.addPoint((x + 10), (y + height - 10))
+        bottom.addPoint(x, (y + height))
+        right.addPoint((x + width), y)
+        right.addPoint((x + width), (y + height))
+        right.addPoint((x + width - 10), (y + height - 10))
+        right.addPoint((x + width - 10), (y + 10))
+        right.addPoint((x + width), y)
+    }
+
     override fun paint(g2d: Graphics2D) {
         super.paint(g2d)
         // decoration
@@ -144,51 +172,29 @@ class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
         val x = pos.x.toFloat()
         val y = pos.y.toFloat()
 
+        // side note: I just realized that there is probably no need to back up the paint as every time a gradient is
+        // used a new paint is set, plus the fact that it does not affect the color
         // backup paint
-        val originalPaint = g2d.paint
+        //val originalPaint = g2d.paint
 
         // top
         g2d.paint = GradientPaint(x, y, Color.BLACK, x, y + 8, this.color)
-        val top = Polygon()
-        top.addPoint(x.toInt(), y.toInt())
-        top.addPoint(x.toInt() + 10, y.toInt() + 10)
-        top.addPoint(x.toInt() + width - 10, y.toInt() + 10)
-        top.addPoint(x.toInt() + width, y.toInt())
-        top.addPoint(x.toInt(), y.toInt())
         g2d.fill(top)
 
         // left
         g2d.paint = GradientPaint(x, y, Color.BLACK, x + 8, y, this.color)
-        val left = Polygon()
-        left.addPoint(x.toInt(), y.toInt())
-        left.addPoint(x.toInt() + 10, y.toInt() + 10)
-        left.addPoint(x.toInt() + 10, y.toInt() + height - 10)
-        left.addPoint(x.toInt(), y.toInt() + height)
-        left.addPoint(x.toInt(), y.toInt())
         g2d.fill(left)
 
         // bottom
         g2d.paint = GradientPaint(x, y + height, Color.BLACK, x, y + height - 8, this.color)
-        val bottom = Polygon()
-        bottom.addPoint(x.toInt(), (y + height).toInt())
-        bottom.addPoint((x + width).toInt(), (y + height).toInt())
-        bottom.addPoint((x + width - 10).toInt(), (y + height - 10).toInt())
-        bottom.addPoint((x + 10).toInt(), (y + height - 10).toInt())
-        bottom.addPoint(x.toInt(), (y + height).toInt())
         g2d.fill(bottom)
 
         // right
         g2d.paint = GradientPaint(x + width, y, Color.BLACK, x + width - 10, y, this.color)
-        val right = Polygon()
-        right.addPoint((x + width).toInt(), y.toInt())
-        right.addPoint((x + width).toInt(), (y + height).toInt())
-        right.addPoint((x + width - 10).toInt(), (y + height - 10).toInt())
-        right.addPoint((x + width - 10).toInt(), (y + 10).toInt())
-        right.addPoint((x + width).toInt(), y.toInt())
         g2d.fill(right)
 
         // restore paint
-        g2d.paint = originalPaint
+        //g2d.paint = originalPaint
 
         // white border
         g2d.color = Color.WHITE
@@ -218,4 +224,56 @@ class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
         }
         return null
     }
+}
+
+/**
+ * for up facing triangles, its position is defined as the coordinates of its bottom left corner
+ * for down facing triangles, its position is defined as the coordinates of its top left corner
+ */
+class Triangle(x: Int, y: Int, private val faceUp: Boolean = true) : Rectangle(x, y, 34, 34, true, true), RigidBody {
+    private val triangle: Polygon = Polygon()
+
+    init {
+        if (faceUp) {
+            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+            triangle.addPoint((pos.x + width).toInt(), pos.y.toInt())
+            triangle.addPoint((pos.x + width / 2).toInt(), (pos.y - height).toInt())
+            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+        } else {
+            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+            triangle.addPoint((pos.x + width).toInt(), pos.y.toInt())
+            triangle.addPoint((pos.x + width / 2).toInt(), (pos.y + height).toInt())
+            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+        }
+    }
+
+    override fun paint(g2d: Graphics2D) {
+        g2d.paint = if (faceUp) GradientPaint(
+            pos.x.toFloat(), (pos.y - height).toFloat(), Color.BLACK,
+            pos.x.toFloat(), pos.y.toFloat(), this.color
+        ) else GradientPaint(
+            pos.x.toFloat(), (pos.y + height).toFloat(), Color.BLACK,
+            pos.x.toFloat(), pos.y.toFloat(), this.color
+        )
+        g2d.fill(triangle)
+        // white boundary
+        g2d.color = Color.WHITE
+        g2d.draw(triangle)
+    }
+
+    override fun detectCollision(player: Player): CollisionEvent? {
+        val x = player.pos.x.toInt()
+        val y = player.pos.y.toInt()
+        val width = player.dimension.width
+        val height = player.dimension.height
+        if (triangle.contains(x, y)
+            || triangle.contains(x + width, y)
+            || triangle.contains(x, y + height)
+            || triangle.contains(x + width, y + height)
+        ) {
+            return CollisionEvent(player, CollisionSide.LEFT, this)
+        }
+        return null
+    }
+
 }

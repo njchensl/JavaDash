@@ -1,9 +1,6 @@
 package javadash
 
-import javadash.game.CeilingSegment
-import javadash.game.GameScene
-import javadash.game.GroundSegment
-import javadash.game.Square
+import javadash.game.*
 import javadash.ui.*
 import javadash.ui.Rectangle
 import java.awt.*
