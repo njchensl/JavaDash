@@ -196,8 +196,26 @@ class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
     }
 
     override fun detectCollision(player: Player): CollisionEvent? {
-        // TODO
-
+        val pos = player.pos
+        val dimension = player.dimension
+        // top
+        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 25) {
+                return CollisionEvent(player, CollisionSide.TOP, this)
+            }
+        }
+        // bottom
+        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 10) {
+                return CollisionEvent(player, CollisionSide.BOTTOM, this)
+            }
+        }
+        // left
+        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
+            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+                return CollisionEvent(player, CollisionSide.LEFT, this)
+            }
+        }
         return null
     }
 }

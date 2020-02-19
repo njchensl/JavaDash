@@ -175,7 +175,7 @@ class MainFrame : JFrame() {
             activeScene.addElement(8, cs)
 
             for (i in 0..9) {
-                val block = Square(300 + i * 34, 300)
+                val block = Square(400 + i * 34, 300)
                 block.color = Color.BLUE
                 activeScene.addElement(8, block)
             }
