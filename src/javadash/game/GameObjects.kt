@@ -137,3 +137,11 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, 
         return null
     }
 }
+
+class Square(x: Int, y: Int) : Rectangle(x, y, 20, 20, true, false), RigidBody {
+    override fun detectCollision(player: Player): CollisionEvent? {
+        // TODO
+
+        return null
+    }
+}

@@ -108,8 +108,10 @@ class GameScene : Scene() {
         rebuildIndex()
         // add timer
         timer = Timer(refreshDelay) {
+            val time = System.currentTimeMillis()
             detectCollision()
             update()
+            //println(System.currentTimeMillis() - time)
         }
         timer.start()
     }

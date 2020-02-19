@@ -34,6 +34,7 @@ class MainFrame : JFrame() {
     var previousMouseLocation: Point = MouseInfo.getPointerInfo().location
     private val bf: BufferedImage
     private val canvas: Canvas
+    private var paintTime = 100L
 
     override fun paint(g: Graphics) {
         paint(g as Graphics2D)
@@ -58,7 +59,7 @@ class MainFrame : JFrame() {
 
     init {
         val blankScene = Scene()
-        blankScene.addElement(9, Rectangle(0 ,0, Int.MAX_VALUE, Int.MAX_VALUE, Color.BLACK))
+        blankScene.addElement(9, Rectangle(0, 0, Int.MAX_VALUE, Int.MAX_VALUE, Color.BLACK))
         activeScene = blankScene
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
         addWindowListener(object : WindowListener {
@@ -89,26 +90,29 @@ class MainFrame : JFrame() {
         canvas.createBufferStrategy(2)
         this.pack()
         this.bf = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+        val canvasBufferStrategy = canvas.bufferStrategy
         val timer = ActionListener {
-            /*
-            this.paint(bf.graphics)
-            val g2d = this.graphics as Graphics2D
-
-            g2d.setRenderingHint(
-                RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON
-            )
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
-            g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
-            g2d.drawImage(bf, 0, 0, windowDimension.width, windowDimension.height, null)
-
-             */
-
-            paint(canvas.bufferStrategy.drawGraphics)
-            canvas.bufferStrategy.show()
+            val time = System.currentTimeMillis()
+            paint(canvasBufferStrategy.drawGraphics)
+            canvasBufferStrategy.show()
+            paintTime = System.currentTimeMillis() - time
         }
-        this.timer = Timer(17, timer)
+        this.timer = Timer(5, timer)
         this.timer.start()
+        // drawing performance monitoring thread
+        Thread {
+            while (true) {
+                Thread.sleep(paintTime)
+                val framerateExpected = 1000 / (paintTime + 0.000000001)
+                val framerateActual = 1000 / this.timer.delay
+                if (framerateExpected < framerateActual - 20) {
+                    this.timer.delay++
+                } else if (framerateExpected > framerateActual + 50 && this.timer.delay > 4) {
+                    this.timer.delay--
+                }
+                //println("Framerate: " + 1000 / this.timer.delay)
+            }
+        }.start()
         canvas.addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent?) {
                 activeScene.mouseReleased(e)
@@ -161,7 +165,7 @@ class MainFrame : JFrame() {
             gs.color = Color.GREEN
             activeScene.addElement(8, gs)
 
-            gs = GroundSegment(1100, 200, 1000, 1000)
+            gs = GroundSegment(1100, 300, 1000, 1000)
             gs.color = Color.MAGENTA
             activeScene.addElement(8, gs)
 
