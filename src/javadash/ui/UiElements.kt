@@ -70,34 +70,44 @@ class SceneLayer : Displayable {
 
     fun addElement(d: Displayable) {
         checkParameterNotOfIllegalType(d)
-        elements.add(d)
+        synchronized(elements) {
+            elements.add(d)
+        }
     }
 
     fun addAll(vararg d: Displayable) {
-        elements.addAll(d)
+        synchronized(elements) {
+            elements.addAll(d)
+        }
     }
 
     fun mouseClicked(e: MouseEvent?) {
         // transfer the event downstream
-        elements.forEach {
-            if (it is CanInteractWithMouse) {
-                it.mouseClicked(e)
+        synchronized(elements) {
+            elements.forEach {
+                if (it is CanInteractWithMouse) {
+                    it.mouseClicked(e)
+                }
             }
         }
     }
 
     fun mousePressed(e: MouseEvent?) {
-        elements.forEach {
-            if (it is CanInteractWithMouse) {
-                it.mousePressed(e)
+        synchronized(elements) {
+            elements.forEach {
+                if (it is CanInteractWithMouse) {
+                    it.mousePressed(e)
+                }
             }
         }
     }
 
     fun mouseReleased(e: MouseEvent?) {
-        elements.forEach {
-            if (it is CanInteractWithMouse) {
-                it.mouseReleased(e)
+        synchronized(elements) {
+            elements.forEach {
+                if (it is CanInteractWithMouse) {
+                    it.mouseReleased(e)
+                }
             }
         }
     }
