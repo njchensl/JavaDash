@@ -76,7 +76,7 @@ open class Rectangle(
     var height: Int,
     fixed: Boolean = true,
     killer: Boolean = false,
-    var color: Color = Color.BLACK
+    val color: Color = Color.BLUE
 ) :
     AbstractGameObject(Vector(x, y), fixed, killer) {
     override fun paint(g2d: Graphics2D) {
@@ -91,7 +91,25 @@ open class Rectangle(
 /**
  * segment of the floor, top / left collision detections only
  */
-class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, false), RigidBody {
+class GroundSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Color.BLUE) :
+    Rectangle(x, y, width, height, true, false, color), RigidBody {
+    private val decorationShape = java.awt.Rectangle(x, y, width, if (height < 200) height else 200)
+    private val decorationGradientPaint = GradientPaint(
+        x.toFloat(),
+        y.toFloat(), Color.BLACK, x.toFloat(), (if (height < 200) y + height else y + 200).toFloat(), this.color
+    )
+
+    override fun paint(g2d: Graphics2D) {
+        super.paint(g2d)
+        // some more decorations
+
+        g2d.paint = decorationGradientPaint
+        g2d.fill(decorationShape)
+
+        g2d.color = Color.WHITE
+        g2d.drawRect(pos.x.toInt(), pos.y.toInt(), width, height)
+    }
+
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
@@ -115,7 +133,8 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, w
 /**
  * segment of the ceiling, bottom / left collision detections only
  */
-class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, width, height, true, false), RigidBody {
+class CeilingSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Color.BLUE) :
+    Rectangle(x, y, width, height, true, false, color), RigidBody {
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
@@ -136,7 +155,7 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int) : Rectangle(x, y, 
     }
 }
 
-class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
+class Square(x: Int, y: Int, color: Color = Color.BLUE) : Rectangle(x, y, 34, 34, true, false, color), RigidBody {
     private val top: Polygon = Polygon()
     private val left: Polygon = Polygon()
     private val bottom: Polygon = Polygon()
@@ -230,7 +249,8 @@ class Square(x: Int, y: Int) : Rectangle(x, y, 34, 34, true, false), RigidBody {
  * for up facing triangles, its position is defined as the coordinates of its bottom left corner
  * for down facing triangles, its position is defined as the coordinates of its top left corner
  */
-class Triangle(x: Int, y: Int, private val faceUp: Boolean = true) : Rectangle(x, y, 34, 34, true, true), RigidBody {
+class Triangle(x: Int, y: Int, private val faceUp: Boolean = true, color: Color = Color.BLUE) :
+    Rectangle(x, y, 34, 34, true, true, color), RigidBody {
     private val triangle: Polygon = Polygon()
 
     init {

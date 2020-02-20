@@ -156,24 +156,19 @@ class MainFrame : JFrame() {
             Thread.sleep(1000)
             activeScene = GameScene()
             var gs = GroundSegment(0, 500, 1000, 1000)
-            gs.color = Color.BLUE
             activeScene.addElement(8, gs)
 
-            gs = GroundSegment(1000, 400, 100, 1000)
-            gs.color = Color.GREEN
+            gs = GroundSegment(1000, 400, 100, 1000, Color.GREEN)
             activeScene.addElement(8, gs)
 
-            gs = GroundSegment(1100, 300, 1000, 1000)
-            gs.color = Color.MAGENTA
+            gs = GroundSegment(1100, 300, 1000, 1000, Color.BLUE)
             activeScene.addElement(8, gs)
 
             val cs = CeilingSegment(500, -30, 300, 400)
-            cs.color = Color.BLUE
             activeScene.addElement(8, cs)
 
             for (i in 0..9) {
                 val block = Square(400 + i * 34, 350)
-                block.color = Color.BLUE
                 activeScene.addElement(8, block)
             }
 
