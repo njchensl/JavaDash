@@ -297,3 +297,8 @@ class Triangle(x: Int, y: Int, private val faceUp: Boolean = true, color: Color 
     }
 
 }
+
+// TODO other elements
+// TODO rectangles with mutable color (the colors and the start and end player positions will be specified)
+// TODO movable rectangles (same idea)
+// TODO OPTIONAL: movable rectangles with changing colors

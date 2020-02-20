@@ -228,8 +228,8 @@ open class Button(
     var textLocationAdditionalOffset: Point = Point(0, 0)
 ) : Rectangle(x, y, width, height, backgroundColor), Displayable, CanInteractWithMouse {
 
-    var mouseListeners: MutableList<MouseListener> = ArrayList()
-    protected var pressed = false
+    private var mouseListeners: MutableList<MouseListener> = ArrayList()
+    private var pressed = false
 
     override fun paint(g2d: Graphics2D) {
         if (backgroundColor != null) {
