@@ -345,3 +345,9 @@ class Label(
         g2d.drawString(text, x, y)
     }
 }
+
+class ImageView(x: Int, y: Int, width: Int, height: Int, val image: Image) : Rectangle(x, y, width, height) {
+    override fun paint(g2d: Graphics2D) {
+        g2d.drawImage(image, x, y, width, height, null)
+    }
+}

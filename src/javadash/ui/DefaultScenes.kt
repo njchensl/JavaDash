@@ -1,6 +1,7 @@
 package javadash.ui
 
 import javadash.Main
+import javadash.MainFrame
 import java.awt.Color
 import java.awt.Font
 import java.awt.Point
@@ -30,7 +31,7 @@ object OptionPane {
 
 open class OkScene(title: String = "", message: String = "") : Scene() {
     init {
-        val dimension = Main.MAIN_FRAME.windowDimension
+        val dimension = MainFrame.windowDimension!!
         // background
         layers[9].addElement(Rectangle(0, 0, dimension.width, dimension.height, Color.BLACK))
         // buttons
@@ -73,7 +74,7 @@ open class OkCancelScene(
 ) : Scene() {
 
     init {
-        val dimension = Main.MAIN_FRAME.windowDimension
+        val dimension = MainFrame.windowDimension!!
         // background
         layers[9].addElement(Rectangle(0, 0, dimension.width, dimension.height, Color.BLACK))
         // buttons

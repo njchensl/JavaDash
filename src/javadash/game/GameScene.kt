@@ -1,18 +1,20 @@
 package javadash.game
 
-import javadash.Main
+import javadash.MainFrame
 import javadash.ui.Displayable
+import javadash.ui.ImageView
 import javadash.ui.Scene
 import javadash.util.Vector
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics2D
+import java.awt.Image
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.Timer
 
 
-class GameScene : Scene() {
+class GameScene(private val backgroundImage: Image? = null) : Scene() {
     lateinit var timer: Timer
     private val player: Player
     private val refreshDelay: Int = 8
@@ -24,14 +26,18 @@ class GameScene : Scene() {
 
     init {
         // black background
+        val windowDimension = MainFrame.windowDimension!!
         layers[9].addElement(
-            javadash.ui.Rectangle(
-                0,
-                0,
-                10000,
-                5000,
-                Color.BLACK
-            )
+            if (backgroundImage == null)
+                javadash.ui.Rectangle(
+                    0,
+                    0,
+                    windowDimension.width,
+                    windowDimension.height,
+                    Color.BLACK
+                )
+            else
+                ImageView(0, 0, windowDimension.width, windowDimension.height, backgroundImage)
         )
 
         // player

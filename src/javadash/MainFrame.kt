@@ -14,6 +14,7 @@ import java.net.URLClassLoader
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
+import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.Timer
 import javax.swing.WindowConstants
@@ -26,7 +27,10 @@ import kotlin.system.exitProcess
 
 
 class MainFrame : JFrame() {
-    val windowDimension: Dimension
+    companion object {
+        @JvmStatic
+        var windowDimension: Dimension? = null
+    }
     private val _scenes = Stack<Scene>()
     private val timer: Timer
     var activeScene: Scene
@@ -76,6 +80,7 @@ class MainFrame : JFrame() {
         )
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+        g.scale(1.1, 1.1)
         activeScene.paint(g)
         previousMouseLocation = getMouseLocation()
     }
@@ -108,7 +113,7 @@ class MainFrame : JFrame() {
         this.add(canvas)
         this.isVisible = true
         canvas.isFocusable = true
-        this.windowDimension = Dimension(width, height)
+        windowDimension = Dimension(width, height)
         canvas.preferredSize = windowDimension
         canvas.createBufferStrategy(2)
         this.pack()
@@ -186,12 +191,20 @@ class MainFrame : JFrame() {
     }
 
     private fun readScene(f: File): GameScene {
-        val scene = GameScene()
         val factory = DocumentBuilderFactory.newInstance()
         val documentBuilder = factory.newDocumentBuilder()
         val document = documentBuilder.parse(f)
         val rootElement = document.documentElement
         val nodeList = rootElement.childNodes
+
+        val backgroundImage: Image? = try {
+            ImageIO.read(URL(rootElement.getAttribute("background")))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+        val scene = GameScene(backgroundImage)
+
         for (i in 0 until nodeList.length) {
             val childElement = nodeList.item(i)
             if (childElement.nodeName == "object") {
