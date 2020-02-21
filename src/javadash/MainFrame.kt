@@ -7,13 +7,20 @@ import org.w3c.dom.Element
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
 import java.io.File
-import java.nio.charset.StandardCharsets
+import java.io.FileOutputStream
+import java.net.URL
+import java.net.URLClassLoader
 import java.util.*
-import javax.swing.*
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import javax.swing.JFrame
 import javax.swing.Timer
+import javax.swing.WindowConstants
+import javax.tools.ToolProvider
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.math.absoluteValue
+import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 import kotlin.system.exitProcess
 
@@ -171,7 +178,8 @@ class MainFrame : JFrame() {
          */
 
         Thread {
-            Thread.sleep(1000)
+            Thread.sleep(1)
+            /*
             activeScene = GameScene()
             var gs = GroundSegment(0, 500, 1000, 1000)
             activeScene.addElement(8, gs)
@@ -190,14 +198,11 @@ class MainFrame : JFrame() {
                 activeScene.addElement(8, block)
             }
 
+             */
+            activeScene = readScene(File("scene.xml"))
+
             (activeScene as GameScene).start()
-        }//.start()
-
-        Thread {
-            Thread.sleep(100)
-            readScene(File("scene.xml"))
         }.start()
-
     }
 
     private fun readScene(f: File): GameScene {
@@ -206,17 +211,62 @@ class MainFrame : JFrame() {
         val documentBuilder = factory.newDocumentBuilder()
         val document = documentBuilder.parse(f)
         val rootElement = document.documentElement
-        val nodeList = document.getElementsByTagName("object")
+        val nodeList = rootElement.childNodes
         for (i in 0 until nodeList.length) {
-            try {
-                val element = nodeList.item(i) as Element
-                // class type
-                val type = element.getAttribute("type")
-                val layer = element.getAttribute("layer").toInt()
+            val childElement = nodeList.item(i)
+            if (childElement.nodeName == "object") {
+                try {
+                    val element = childElement as Element
+                    // class type
+                    val type = element.getAttribute("type")
+                    val layer = element.getAttribute("layer").toInt()
+                    if (layer < 0 || layer > 9) {
+                        OptionPane.showMessageDialog("Error", "Layer number $layer out of bound")
+                        continue
+                    }
+                    val klass = try {
+                        Class.forName("javadash.game.$type").kotlin
+                    } catch (e: ClassNotFoundException) {
+                        OptionPane.showMessageDialog("Error", "Unexpected class type: javadash.game.$type")
+                        continue
+                    }
+
+                    // get common constructor arguments
+                    val x = element.getByName("x").toInt()
+                    val y = element.getByName("y").toInt()
+
+                    val color: Color
+                    color = try {
+                        Color::class.java.getField(element.getByName("color")).get(null) as Color
+                    } catch (ignored: Exception) {
+                        Color.BLUE
+                    }
+                    val gameObject = instantiateObject(element, klass, x, y, color)
+                    if (gameObject != null) {
+                        scene.addElement(layer, gameObject)
+                    }
+                } catch (e: Exception) {
+                    OptionPane.showThrowable(e)
+                }
+            } else if (childElement.nodeName == "array") {
+                val element = childElement as Element
+                // get the first object
+                var obj: Element? = null
+                val nodes = element.childNodes
+                for (j in 0 until nodes.length) {
+                    if (nodes.item(j).nodeName == "object") {
+                        obj = nodes.item(j) as Element
+                        break
+                    }
+                }
+                val layer = obj!!.getAttribute("layer").toInt()
                 if (layer < 0 || layer > 9) {
                     OptionPane.showMessageDialog("Error", "Layer number $layer out of bound")
-                    continue
                 }
+                val type = obj.getAttribute("type")
+                // get common constructor arguments
+                val x = obj.getByName("x").toInt()
+                val y = obj.getByName("y").toInt()
                 val klass = try {
                     Class.forName("javadash.game.$type").kotlin
                 } catch (e: ClassNotFoundException) {
@@ -224,38 +274,140 @@ class MainFrame : JFrame() {
                     continue
                 }
 
-                // primary constructor
-                val primCon = klass.primaryConstructor!!
-
-                // get common constructor arguments
-                val x = element.getByName("x").toInt()
-                val y = element.getByName("y").toInt()
-
-                val color: Color
-                color = try {
-                    Color::class.java.getField(element.getByName("color")).get(null) as Color
+                val color = try {
+                    Color::class.java.getField(obj.getByName("color")).get(null) as Color
                 } catch (ignored: Exception) {
                     Color.BLUE
                 }
+                val gameObject = instantiateObject(obj, klass, x, y, color)
+                // get array length
+                val arrayLength = element.getAttribute("length").toInt()
 
-                when (klass) {
-                    GroundSegment::class -> {
-                        // get additional constructor arguments
-                        val width = element.getByName("width").toInt()
-                        val height = element.getByName("height").toInt()
-                        // instantiate
-                        val groundSegment = primCon.call(x, y, width, height, color) as GroundSegment
-                        scene.addElement(layer, groundSegment)
+                if (gameObject != null) {
+                    scene.addElement(layer, gameObject)
+                    // instantiate additional objects based on array length
+                    if (gameObject is javadash.game.Rectangle) {
+                        val width = gameObject.width
+                        for (j in 1 until arrayLength) {
+                            val o = instantiateObject(obj, klass, x + j * width, y, color)
+                            scene.addElement(layer, o!!)
+                        }
                     }
-                    else -> OptionPane.showMessageDialog("Error", "Unexpected class type: $klass")
                 }
-            } catch (e: Exception) {
-                OptionPane.showThrowable(e)
             }
         }
 
 
-        return GameScene()
+        return scene
+    }
+
+
+    private fun instantiateObject(
+        element: Element,
+        klass: KClass<out Any>,
+        x: Int,
+        y: Int,
+        color: Color
+    ): AbstractGameObject? {
+        val primCon = klass.primaryConstructor!!
+        var scriptInstance = BiConsumer<AbstractGameObject, Int> { _, _ -> }
+        // get and compile script if needed
+        @Suppress("UNCHECKED_CAST")
+        try {
+            val className = ("S" + Random().nextLong().absoluteValue).trim()
+            val script = element.getByName("script").trim()
+            val code = """
+            import java.util.function.BiConsumer;
+            import javadash.game.AbstractGameObject;
+            
+            public class $className<T, U> implements BiConsumer<T, U> {
+                
+                @Override
+                public void accept(T t, U u) {
+                    int timeElapsed = (int) u;
+                    AbstractGameObject object = (AbstractGameObject) t;
+                    $script
+                }
+                
+                public static BiConsumer<AbstractGameObject, Integer> getScript() {
+                    return new $className<AbstractGameObject, Integer>();
+                }
+            }
+        """.trimIndent()
+            //println(code)
+            // write code to file
+            val tempFile = File("$className.java")
+            tempFile.createNewFile()
+            val fos = FileOutputStream(tempFile)
+            fos.write(code.toByteArray())
+            fos.flush()
+            fos.close()
+
+            // compile
+            val javaCompiler = ToolProvider.getSystemJavaCompiler()!!
+            javaCompiler.run(null, null, null, "$className.java")
+            //println(0)
+            tempFile.delete()
+            //println("compiled")
+            // load
+            val compileTemp = File("$className.class").absoluteFile
+            //println(compileTemp.parent)
+            val url: URL = File(compileTemp.parent).toURI().toURL()
+            //println(url)
+            val urls: Array<URL> = arrayOf(url)
+            val cl: ClassLoader = URLClassLoader(urls)
+            val cls = cl.loadClass(className)
+            scriptInstance = cls.getDeclaredMethod("getScript").invoke(null) as BiConsumer<AbstractGameObject, Int>
+            compileTemp.delete()
+        } catch (e: Exception) {
+            if (e !is IllegalStateException) {
+                e.printStackTrace()
+            }
+        }
+
+        when (klass) {
+            GroundSegment::class -> {
+                // get additional constructor arguments
+                val width = element.getByName("width").toInt()
+                val height = element.getByName("height").toInt()
+                // instantiate
+                return primCon.call(
+                    x,
+                    y,
+                    width,
+                    height,
+                    color,
+                    scriptInstance
+                ) as GroundSegment
+            }
+            CeilingSegment::class -> {
+                // get additional constructor arguments
+                val width = element.getByName("width").toInt()
+                val height = element.getByName("height").toInt()
+                // instantiate
+                return primCon.call(
+                    x,
+                    y,
+                    width,
+                    height,
+                    color,
+                    scriptInstance
+                ) as CeilingSegment
+            }
+            Square::class -> {
+                // instantiate
+                return primCon.call(x, y, color, scriptInstance) as Square
+            }
+            Triangle::class -> {
+                // get additional constructor arguments
+                val faceUp = element.getByName("up").toBoolean()
+                return primCon.call(x, y, faceUp, color, scriptInstance) as Triangle
+            }
+            else -> {
+                OptionPane.showMessageDialog("Error", "Unexpected class type: $klass")
+                return null
+            }
+        }
     }
 
     private fun readDefaultScene() {

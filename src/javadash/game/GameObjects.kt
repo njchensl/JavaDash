@@ -5,6 +5,8 @@ import javadash.ui.OptionPane
 import javadash.util.Vector
 import java.awt.*
 import java.awt.event.KeyEvent
+import java.util.function.BiConsumer
+import java.util.function.Consumer
 
 /**
  * for all non player rigid body game objects
@@ -19,7 +21,8 @@ interface RigidBody {
 abstract class AbstractGameObject(
     @Volatile var pos: Vector,
     var isFixed: Boolean = false,
-    var isKiller: Boolean = false
+    var isKiller: Boolean = false,
+    var updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
 ) :
     Displayable {
     @Volatile
@@ -29,7 +32,13 @@ abstract class AbstractGameObject(
     var acc = Vector.ZeroVector
 
     abstract override fun paint(g2d: Graphics2D)
-    abstract fun update(timeElapsed: Int)
+    open fun update(timeElapsed: Int) {
+        updatingScript.accept(this, timeElapsed)
+    }
+}
+
+class Array<out E : AbstractGameObject> {
+
 }
 
 /**
@@ -83,23 +92,24 @@ open class Rectangle(
     var height: Int,
     fixed: Boolean = true,
     killer: Boolean = false,
-    val color: Color = Color.BLUE
+    val color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
 ) :
-    AbstractGameObject(Vector(x, y), fixed, killer) {
+    AbstractGameObject(Vector(x, y), fixed, killer, updatingScript) {
     override fun paint(g2d: Graphics2D) {
         g2d.color = color
         g2d.fillRect(pos.x.toInt(), pos.y.toInt(), width, height)
-    }
-
-    override fun update(timeElapsed: Int) {
     }
 }
 
 /**
  * segment of the floor, top / left collision detections only
  */
-class GroundSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Color.BLUE) :
-    Rectangle(x, y, width, height, true, false, color), RigidBody {
+class GroundSegment(
+    x: Int, y: Int, width: Int, height: Int, color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
+) :
+    Rectangle(x, y, width, height, true, false, color, updatingScript), RigidBody {
     private val decorationShape = java.awt.Rectangle(x, y, width, if (height < 200) height else 200)
     private val decorationGradientPaint = GradientPaint(
         x.toFloat(),
@@ -140,8 +150,15 @@ class GroundSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Colo
 /**
  * segment of the ceiling, bottom / left collision detections only
  */
-class CeilingSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Color.BLUE) :
-    Rectangle(x, y, width, height, true, false, color), RigidBody {
+class CeilingSegment(
+    x: Int,
+    y: Int,
+    width: Int,
+    height: Int,
+    color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
+) :
+    Rectangle(x, y, width, height, true, false, color, updatingScript), RigidBody {
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
@@ -162,7 +179,13 @@ class CeilingSegment(x: Int, y: Int, width: Int, height: Int, color: Color = Col
     }
 }
 
-class Square(x: Int, y: Int, color: Color = Color.BLUE) : Rectangle(x, y, 34, 34, true, false, color), RigidBody {
+class Square(
+    x: Int,
+    y: Int,
+    color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
+) :
+    Rectangle(x, y, 34, 34, true, false, color, updatingScript), RigidBody {
     private val top: Polygon = Polygon()
     private val left: Polygon = Polygon()
     private val bottom: Polygon = Polygon()
@@ -256,8 +279,14 @@ class Square(x: Int, y: Int, color: Color = Color.BLUE) : Rectangle(x, y, 34, 34
  * for up facing triangles, its position is defined as the coordinates of its bottom left corner
  * for down facing triangles, its position is defined as the coordinates of its top left corner
  */
-class Triangle(x: Int, y: Int, private val faceUp: Boolean = true, color: Color = Color.BLUE) :
-    Rectangle(x, y, 34, 34, true, true, color), RigidBody {
+class Triangle(
+    x: Int,
+    y: Int,
+    private val faceUp: Boolean = true,
+    color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
+) :
+    Rectangle(x, y, 34, 34, true, true, color, updatingScript), RigidBody {
     private val triangle: Polygon = Polygon()
 
     init {
@@ -293,18 +322,14 @@ class Triangle(x: Int, y: Int, private val faceUp: Boolean = true, color: Color 
         val y = player.pos.y.toInt()
         val width = player.dimension.width
         val height = player.dimension.height
-        if (triangle.contains(x, y)
-            || triangle.contains(x + width, y)
-            || triangle.contains(x, y + height)
-            || triangle.contains(x + width, y + height)
-        ) {
+        if (triangle.intersects(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())) {
             return CollisionEvent(player, CollisionSide.LEFT, this)
         }
         return null
     }
-
 }
 
+// TODO array
 // TODO other elements
 // TODO rectangles with mutable color (the colors and the start and end player positions will be specified)
 // TODO movable rectangles (same idea)

@@ -1,16 +1,41 @@
 <?xml version = "1.0"?>
 <map>
+    <array length = "10">
+        <object type = "GroundSegment" layer = "8">
+            <x>0</x>
+            <y>500</y>
+            <width>100</width>
+            <height>1000</height>
+        </object>
+    </array>
     <object type = "GroundSegment" layer = "8">
-        <x>1</x>
-        <y>2</y>
+        <x>1000</x>
+        <y>400</y>
         <width>100</width>
-        <height>200</height>
-        <color>RED</color>
+        <height>1000</height>
+        <color>green</color>
+        <script>
+            //object.setPos(new javadash.util.Vector(object.getPos().getX() + 1, object.getPos().getY()));
+        </script>
     </object>
     <object type = "GroundSegment" layer = "8">
-
-        <y>2</y>
-        <width>100</width>
-        <height>200</height>
+        <x>1100</x>
+        <y>300</y>
+        <width>1000</width>
+        <height>1000</height>
+        <color>blue</color>
     </object>
+    <object type = "CeilingSegment" layer = "8">
+        <x>500</x>
+        <y>-30</y>
+        <width>300</width>
+        <height>300</height>
+    </object>
+    <array length = "3">
+        <object type = "Triangle" layer = "8">
+            <x>400</x>
+            <y>500</y>
+            <up>true</up>
+        </object>
+    </array>
 </map>

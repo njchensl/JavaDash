@@ -122,8 +122,10 @@ class GameScene : Scene() {
     }
 
     private fun update() {
+        gameObjectList.forEach {
+            it.update(refreshDelay)
+        }
         player.update(refreshDelay)
-        // TODO in the future all objects will be updated
     }
 
     private fun detectCollision() {
