@@ -15,7 +15,7 @@ public class Main {
     public final static MainFrame MAIN_FRAME;
 
     static {
-
+        System.setProperty("sun.java2d.opengl", "True");
         MAIN_FRAME = new MainFrame();
         /*
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();

@@ -116,8 +116,10 @@ class MainFrame : JFrame() {
         val canvasBufferStrategy = canvas.bufferStrategy
         val timer = ActionListener {
             val time = System.currentTimeMillis()
-            paint(canvasBufferStrategy.drawGraphics)
+            val graphics = canvasBufferStrategy.drawGraphics
+            paint(graphics)
             canvasBufferStrategy.show()
+            graphics.dispose()
             paintTime = System.currentTimeMillis() - time
         }
         this.timer = Timer(5, timer)
@@ -178,29 +180,7 @@ class MainFrame : JFrame() {
          */
 
         Thread {
-            Thread.sleep(1)
-            /*
-            activeScene = GameScene()
-            var gs = GroundSegment(0, 500, 1000, 1000)
-            activeScene.addElement(8, gs)
-
-            gs = GroundSegment(1000, 400, 100, 1000, Color.GREEN)
-            activeScene.addElement(8, gs)
-
-            gs = GroundSegment(1100, 300, 1000, 1000, Color.BLUE)
-            activeScene.addElement(8, gs)
-
-            val cs = CeilingSegment(500, -30, 300, 400)
-            activeScene.addElement(8, cs)
-
-            for (i in 0..9) {
-                val block = Square(400 + i * 34, 350)
-                activeScene.addElement(8, block)
-            }
-
-             */
             activeScene = readScene(File("scene.xml"))
-
             (activeScene as GameScene).start()
         }.start()
     }
@@ -296,8 +276,6 @@ class MainFrame : JFrame() {
                 }
             }
         }
-
-
         return scene
     }
 
@@ -333,7 +311,7 @@ class MainFrame : JFrame() {
                     return new $className<AbstractGameObject, Integer>();
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
             //println(code)
             // write code to file
             val tempFile = File("$className.java")
@@ -408,10 +386,6 @@ class MainFrame : JFrame() {
                 return null
             }
         }
-    }
-
-    private fun readDefaultScene() {
-
     }
 }
 
