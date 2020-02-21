@@ -25,8 +25,8 @@ class GameScene : Scene() {
             javadash.ui.Rectangle(
                 0,
                 0,
-                Main.MAIN_FRAME.windowDimension.width,
-                Main.MAIN_FRAME.windowDimension.height,
+                10000,
+               5000,
                 Color.BLACK
             )
         )
@@ -107,10 +107,15 @@ class GameScene : Scene() {
     fun start() {
         rebuildIndex()
         // add timer
-        timer = Timer(refreshDelay) {
-            val time = System.currentTimeMillis()
+        val operation = Runnable {
             detectCollision()
             update()
+        }
+        timer = Timer(refreshDelay) {
+            //val time = System.currentTimeMillis()
+            val t = Thread(operation)
+            t.start()
+            t.join()
             //println(System.currentTimeMillis() - time)
         }
         timer.start()

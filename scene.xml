@@ -1,0 +1,16 @@
+<?xml version = "1.0"?>
+<map>
+    <object type = "GroundSegment" layer = "8">
+        <x>1</x>
+        <y>2</y>
+        <width>100</width>
+        <height>200</height>
+        <color>RED</color>
+    </object>
+    <object type = "GroundSegment" layer = "8">
+
+        <y>2</y>
+        <width>100</width>
+        <height>200</height>
+    </object>
+</map>

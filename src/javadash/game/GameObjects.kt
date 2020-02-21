@@ -16,9 +16,16 @@ interface RigidBody {
 /**
  * for all non-UI game objects
  */
-abstract class AbstractGameObject(var pos: Vector, var isFixed: Boolean = false, var isKiller: Boolean = false) :
+abstract class AbstractGameObject(
+    @Volatile var pos: Vector,
+    var isFixed: Boolean = false,
+    var isKiller: Boolean = false
+) :
     Displayable {
+    @Volatile
     var vel = Vector.ZeroVector
+
+    @Volatile
     var acc = Vector.ZeroVector
 
     abstract override fun paint(g2d: Graphics2D)
@@ -28,7 +35,7 @@ abstract class AbstractGameObject(var pos: Vector, var isFixed: Boolean = false,
 /**
  * the player
  */
-class Player(pos: Vector, var dimension: Dimension = Dimension(34, 34)) : AbstractGameObject(pos) {
+class Player(pos: Vector, val dimension: Dimension = Dimension(34, 34)) : AbstractGameObject(pos) {
     private var playerMode: PlayerMode = DefaultPlayerMode()
 
     init {

@@ -1,32 +1,30 @@
 package javadash.ui
 
 import javadash.Main
-import javadash.game.GameScene
 import java.awt.Color
 import java.awt.Font
 import java.awt.Point
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import java.io.PrintWriter
+import java.io.StringWriter
+
 
 object OptionPane {
     @JvmStatic
     fun showMessageDialog(title: String = "Alert", message: String = "") {
-        // if a game is going, pause it
-        val scene = Main.MAIN_FRAME.activeScene
-        if (scene is GameScene) {
-            scene.timer.stop()
-        }
         Main.MAIN_FRAME.activeScene = OkScene(title, message)
     }
 
     @JvmStatic
     fun showOkCancelDialog(okBtnAction: Runnable = Runnable {}, title: String = "Alert", message: String = "") {
-        // if a game is going, pause it
-        val scene = Main.MAIN_FRAME.activeScene
-        if (scene is GameScene) {
-            scene.timer.stop()
-        }
         Main.MAIN_FRAME.activeScene = OkCancelScene(okBtnAction, title, message)
+    }
+
+    @JvmStatic
+    fun showThrowable(throwable: Throwable) {
+        throwable.printStackTrace()
+        showMessageDialog("Error", throwable.stackTrace[0].toString() + "        " + throwable.message.toString())
     }
 }
 

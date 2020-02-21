@@ -3,12 +3,18 @@ package javadash
 import javadash.game.*
 import javadash.ui.*
 import javadash.ui.Rectangle
+import org.w3c.dom.Element
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.*
 import javax.swing.Timer
+import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.reflect.full.primaryConstructor
 import kotlin.system.exitProcess
 
 
@@ -22,7 +28,11 @@ class MainFrame : JFrame() {
         }
         set(value) {
             if (_scenes.size >= 1) {
-                if (_scenes.peek() != value) {
+                val scene = _scenes.peek()
+                if (scene is GameScene) {
+                    scene.timer.stop()
+                }
+                if (scene != value) {
                     _scenes.push(value)
                 }
             } else {
@@ -33,6 +43,14 @@ class MainFrame : JFrame() {
     private val bf: BufferedImage
     private val canvas: Canvas
     private var paintTime = 100L
+
+    override fun repaint() {
+        throw IllegalStateException()
+    }
+
+    override fun update(g: Graphics?) {
+        throw IllegalStateException()
+    }
 
     override fun paint(g: Graphics) {
         paint(g as Graphics2D)
@@ -100,12 +118,12 @@ class MainFrame : JFrame() {
         // drawing performance monitoring thread
         Thread {
             while (true) {
-                Thread.sleep(paintTime)
+                Thread.sleep(100)
                 val framerateExpected = 1000 / (paintTime + 0.000000001)
                 val framerateActual = 1000 / this.timer.delay
                 if (framerateExpected < framerateActual - 20) {
                     this.timer.delay++
-                } else if (framerateExpected > framerateActual + 50 && this.timer.delay > 4) {
+                } else if (framerateExpected > framerateActual + 50 && this.timer.delay > 3) {
                     this.timer.delay--
                 }
                 //println("Framerate: " + 1000 / this.timer.delay)
@@ -173,7 +191,81 @@ class MainFrame : JFrame() {
             }
 
             (activeScene as GameScene).start()
+        }//.start()
+
+        Thread {
+            Thread.sleep(100)
+            readScene(File("scene.xml"))
         }.start()
 
     }
+
+    private fun readScene(f: File): GameScene {
+        val scene = GameScene()
+        val factory = DocumentBuilderFactory.newInstance()
+        val documentBuilder = factory.newDocumentBuilder()
+        val document = documentBuilder.parse(f)
+        val rootElement = document.documentElement
+        val nodeList = document.getElementsByTagName("object")
+        for (i in 0 until nodeList.length) {
+            try {
+                val element = nodeList.item(i) as Element
+                // class type
+                val type = element.getAttribute("type")
+                val layer = element.getAttribute("layer").toInt()
+                if (layer < 0 || layer > 9) {
+                    OptionPane.showMessageDialog("Error", "Layer number $layer out of bound")
+                    continue
+                }
+                val klass = try {
+                    Class.forName("javadash.game.$type").kotlin
+                } catch (e: ClassNotFoundException) {
+                    OptionPane.showMessageDialog("Error", "Unexpected class type: javadash.game.$type")
+                    continue
+                }
+
+                // primary constructor
+                val primCon = klass.primaryConstructor!!
+
+                // get common constructor arguments
+                val x = element.getByName("x").toInt()
+                val y = element.getByName("y").toInt()
+
+                val color: Color
+                color = try {
+                    Color::class.java.getField(element.getByName("color")).get(null) as Color
+                } catch (ignored: Exception) {
+                    Color.BLUE
+                }
+
+                when (klass) {
+                    GroundSegment::class -> {
+                        // get additional constructor arguments
+                        val width = element.getByName("width").toInt()
+                        val height = element.getByName("height").toInt()
+                        // instantiate
+                        val groundSegment = primCon.call(x, y, width, height, color) as GroundSegment
+                        scene.addElement(layer, groundSegment)
+                    }
+                    else -> OptionPane.showMessageDialog("Error", "Unexpected class type: $klass")
+                }
+            } catch (e: Exception) {
+                OptionPane.showThrowable(e)
+            }
+        }
+
+
+        return GameScene()
+    }
+
+    private fun readDefaultScene() {
+
+    }
+}
+
+/**
+ * extension function for element get by name
+ */
+fun Element.getByName(s: String): String {
+    return this.getElementsByTagName(s).item(0).textContent
 }
