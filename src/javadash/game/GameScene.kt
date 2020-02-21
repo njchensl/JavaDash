@@ -18,6 +18,9 @@ class GameScene : Scene() {
     private val refreshDelay: Int = 8
     private val gameObjectList = ArrayList<AbstractGameObject>()
     private val rigidBodyList = ArrayList<RigidBody>()
+    private val gameObjectsToRender = ArrayList<AbstractGameObject>()
+    private var drawingDistance = 600
+    private var useZonedDrawing = false
 
     init {
         // black background
@@ -26,7 +29,7 @@ class GameScene : Scene() {
                 0,
                 0,
                 10000,
-               5000,
+                5000,
                 Color.BLACK
             )
         )
@@ -67,11 +70,17 @@ class GameScene : Scene() {
         val transform = g2d.transform
         transform.translate((-player.pos.x.toInt() + 300).toDouble(), 0.0)
         g2d.transform = transform
-        paintWithoutBackground(g2d)
+        if (useZonedDrawing) {
+            gameObjectsToRender.reversed().forEach {
+                it.paint(g2d)
+            }
+        } else {
+            paintWithoutBackground(g2d)
+        }
     }
 
     private fun rebuildIndex() {
-        synchronized("gameObjectList") {
+        synchronized(gameObjectList) {
             gameObjectList.clear()
         }
         synchronized(rigidBodyList) {
@@ -93,6 +102,31 @@ class GameScene : Scene() {
         if (it is RigidBody) {
             synchronized(rigidBodyList) {
                 rigidBodyList.add(it)
+            }
+        }
+    }
+
+    private fun rebuildToRenderIndex() {
+        synchronized(gameObjectsToRender) {
+            gameObjectsToRender.clear()
+        }
+        for (i in 0..8) {
+            layers[i].elements.reversed().forEach {
+                if (it is AbstractGameObject) {
+                    if (it is Rectangle) {
+                        if (player.pos.x <= it.pos.x + it.width + 250 && it.pos.x - player.pos.x <= drawingDistance) {
+                            synchronized(gameObjectsToRender) {
+                                gameObjectsToRender.add(it)
+                            }
+                        }
+                    } else {
+                        if (it.pos.x + 300 > player.pos.x) {
+                            synchronized(gameObjectsToRender) {
+                                gameObjectsToRender.add(it)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -119,6 +153,14 @@ class GameScene : Scene() {
             //println(System.currentTimeMillis() - time)
         }
         timer.start()
+
+        if (useZonedDrawing) {
+            Timer(200) {
+                Thread {
+                    rebuildToRenderIndex()
+                }.start()
+            }.start()
+        }
     }
 
     private fun update() {

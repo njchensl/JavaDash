@@ -329,8 +329,5 @@ class Triangle(
     }
 }
 
-// TODO array
 // TODO other elements
-// TODO rectangles with mutable color (the colors and the start and end player positions will be specified)
-// TODO movable rectangles (same idea)
-// TODO OPTIONAL: movable rectangles with changing colors
+// TODO movable rectangles with changing colors
