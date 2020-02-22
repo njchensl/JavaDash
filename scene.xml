@@ -29,13 +29,51 @@
         <x>500</x>
         <y>-30</y>
         <width>300</width>
-        <height>300</height>
+        <height>250</height>
     </object>
     <array length="3">
         <object type="Triangle" layer="8">
             <x>400</x>
             <y>500</y>
             <up>true</up>
+        </object>
+    </array>
+    <array length="3">
+        <object type="Square" layer="7">
+            <x>400</x>
+            <y>400</y>
+        </object>
+    </array>
+    <array length="2">
+        <object type="Triangle" layer="8">
+            <x>1100</x>
+            <y>300</y>
+            <up>true</up>
+        </object>
+    </array>
+    <array length="3">
+        <object type="Triangle" layer="8">
+            <x>1400</x>
+            <y>300</y>
+            <up>true</up>
+        </object>
+    </array>
+    <object type="GroundSegment" layer="8">
+        <x>2100</x>
+        <y>600</y>
+        <width>1000</width>
+        <height>1000</height>
+    </object>
+    <array length="5">
+        <object type="Square" layer="8">
+            <x>2200</x>
+            <y>400</y>
+        </object>
+    </array>
+    <array length="5">
+        <object type="Square" layer="8">
+            <x>2400</x>
+            <y>500</y>
         </object>
     </array>
 </map>

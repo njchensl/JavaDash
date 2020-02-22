@@ -13,7 +13,6 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
 import java.util.function.BiConsumer
-import java.util.function.Consumer
 import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.Timer
@@ -31,6 +30,7 @@ class MainFrame : JFrame() {
         @JvmStatic
         var windowDimension: Dimension? = null
     }
+
     private val _scenes = Stack<Scene>()
     private val timer: Timer
     var activeScene: Scene
@@ -80,7 +80,9 @@ class MainFrame : JFrame() {
         )
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
-        g.scale(1.1, 1.1)
+        if (activeScene is GameScene) {
+            g.scale(1.1, 1.1)
+        }
         activeScene.paint(g)
         previousMouseLocation = getMouseLocation()
     }
