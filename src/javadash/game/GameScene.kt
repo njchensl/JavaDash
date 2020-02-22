@@ -14,7 +14,7 @@ import java.awt.event.KeyListener
 import javax.swing.Timer
 
 
-class GameScene(private val backgroundImage: Image? = null) : Scene() {
+class GameScene(private val backgroundImage: Image? = null, val sourceCode: String) : Scene() {
     lateinit var timer: Timer
     private val player: Player
     private val refreshDelay: Int = 8

@@ -7,6 +7,7 @@ import org.w3c.dom.Element
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
@@ -31,6 +32,7 @@ class MainFrame : JFrame() {
         var windowDimension: Dimension? = null
     }
 
+    private var gameSceneBackup: String? = null
     private val _scenes = Stack<Scene>()
     private val timer: Timer
     var activeScene: Scene
@@ -38,6 +40,9 @@ class MainFrame : JFrame() {
             return _scenes.peek()
         }
         set(value) {
+            if (value is GameScene) {
+                gameSceneBackup = value.sourceCode
+            }
             if (_scenes.size >= 1) {
                 val scene = _scenes.peek()
                 if (scene is GameScene) {
@@ -69,8 +74,17 @@ class MainFrame : JFrame() {
 
     fun popScene() {
         if (_scenes.size > 1) {
-            _scenes.pop()
+            val s = _scenes.pop()
+            if (s is GameScene) {
+                s.timer.stop()
+            }
         }
+    }
+
+    fun resetGameScene() {
+        popScene()
+        activeScene = readScene(gameSceneBackup!!)
+        (activeScene as GameScene).start()
     }
 
     private fun paint(g: Graphics2D) {
@@ -187,15 +201,25 @@ class MainFrame : JFrame() {
          */
 
         Thread {
-            activeScene = readScene(File("scene.xml"))
+            loadDefaultScene()
             (activeScene as GameScene).start()
         }.start()
     }
 
-    private fun readScene(f: File): GameScene {
+    private fun loadDefaultScene() {
+        activeScene = readDefaultScene()
+    }
+
+    private fun readDefaultScene(): GameScene {
+        val f = File("scene.xml")
+        val text = f.readText()
+        return readScene(text)
+    }
+
+    private fun readScene(s: String): GameScene {
         val factory = DocumentBuilderFactory.newInstance()
         val documentBuilder = factory.newDocumentBuilder()
-        val document = documentBuilder.parse(f)
+        val document = documentBuilder.parse(ByteArrayInputStream(s.toByteArray()))
         val rootElement = document.documentElement
         val nodeList = rootElement.childNodes
 
@@ -205,7 +229,7 @@ class MainFrame : JFrame() {
             e.printStackTrace()
             null
         }
-        val scene = GameScene(backgroundImage)
+        val scene = GameScene(backgroundImage, s)
 
         for (i in 0 until nodeList.length) {
             val childElement = nodeList.item(i)

@@ -1,5 +1,6 @@
 package javadash.game
 
+import javadash.Main
 import javadash.ui.Displayable
 import javadash.ui.OptionPane
 import javadash.util.Vector
@@ -81,7 +82,9 @@ class Player(pos: Vector, val dimension: Dimension = Dimension(34, 34)) : Abstra
     }
 
     fun kill() {
-        OptionPane.showMessageDialog("Failed")
+        Main.MAIN_FRAME.resetGameScene()
+        System.gc()
+        //OptionPane.showMessageDialog("Failed")
     }
 }
 
