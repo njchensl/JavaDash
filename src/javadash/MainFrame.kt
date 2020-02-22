@@ -335,7 +335,9 @@ class MainFrame : JFrame() {
             val script = element.getByName("script").trim()
             val code = """
             import java.util.function.BiConsumer;
-            import javadash.game.AbstractGameObject;
+            import javadash.*;
+            import javadash.game.*;
+            import javadash.util.*;
             
             public class $className<T, U> implements BiConsumer<T, U> {
                 
@@ -343,6 +345,7 @@ class MainFrame : JFrame() {
                 public void accept(T t, U u) {
                     int timeElapsed = (int) u;
                     AbstractGameObject object = (AbstractGameObject) t;
+                    Player player = ((GameScene) Main.MAIN_FRAME.getActiveScene()).getPlayer();
                     $script
                 }
                 
@@ -396,6 +399,20 @@ class MainFrame : JFrame() {
                     color,
                     scriptInstance
                 ) as GroundSegment
+            }
+            MutableGroundSegment::class -> {
+                // get additional constructor arguments
+                val width = element.getByName("width").toInt()
+                val height = element.getByName("height").toInt()
+                // instantiate
+                return primCon.call(
+                    x,
+                    y,
+                    width,
+                    height,
+                    color,
+                    scriptInstance
+                ) as MutableGroundSegment
             }
             CeilingSegment::class -> {
                 // get additional constructor arguments

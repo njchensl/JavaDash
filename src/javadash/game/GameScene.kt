@@ -16,7 +16,7 @@ import javax.swing.Timer
 
 class GameScene(private val backgroundImage: Image? = null, val sourceCode: String) : Scene() {
     lateinit var timer: Timer
-    private val player: Player
+    val player: Player
     private val refreshDelay: Int = 8
     private val gameObjectList = ArrayList<AbstractGameObject>()
     private val rigidBodyList = ArrayList<RigidBody>()

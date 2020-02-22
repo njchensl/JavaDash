@@ -8,14 +8,16 @@
             <height>1000</height>
         </object>
     </array>
-    <object type="GroundSegment" layer="8">
+    <object type="MutableGroundSegment" layer="8">
         <x>1000</x>
-        <y>400</y>
+        <y>500</y>
         <width>100</width>
         <height>1000</height>
         <color>blue</color>
         <script>
-            //object.setPos(new javadash.util.Vector(object.getPos().getX() + 1, object.getPos().getY()));
+            if (player.getPos().getX() - object.getPos().getX() > -100) {
+                object.setPos(new Vector(object.getPos().getX(), object.getPos().getY() - 4));
+            }
         </script>
     </object>
     <object type="GroundSegment" layer="8">
@@ -58,12 +60,14 @@
             <up>true</up>
         </object>
     </array>
-    <object type="GroundSegment" layer="8">
-        <x>2100</x>
-        <y>600</y>
-        <width>1000</width>
-        <height>1000</height>
-    </object>
+    <array length="2">
+        <object type="GroundSegment" layer="8">
+            <x>2100</x>
+            <y>600</y>
+            <width>1000</width>
+            <height>1000</height>
+        </object>
+    </array>
     <array length="5">
         <object type="Square" layer="8">
             <x>2200</x>
@@ -74,6 +78,13 @@
         <object type="Square" layer="8">
             <x>2400</x>
             <y>500</y>
+        </object>
+    </array>
+    <array length="30">
+        <object type="Triangle" layer="8">
+            <x>2600</x>
+            <y>600</y>
+            <up>true</up>
         </object>
     </array>
 </map>
