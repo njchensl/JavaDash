@@ -34,12 +34,12 @@ abstract class AbstractGameObject(
 
     var x: Double
         get() = pos.x
-        set(value) {
+        set(@Suppress("UNUSED_PARAMETER") value) {
             throw IllegalAccessException()
         }
     var y: Double
         get() = pos.y
-        set(value) {
+        set(@Suppress("UNUSED_PARAMETER") value) {
             throw IllegalAccessException()
         }
 
@@ -62,7 +62,7 @@ class Player(pos: Vector, val dimension: Dimension = Dimension(34, 34)) : Abstra
 
     override fun paint(g2d: Graphics2D) {
         g2d.color = Color.RED
-        g2d.fillRect(pos.x.toInt(), pos.y.toInt(), dimension.width, dimension.height)
+        g2d.fillRect(x.toInt(), y.toInt(), dimension.width, dimension.height)
     }
 
     /**
@@ -108,7 +108,7 @@ open class Rectangle(
     AbstractGameObject(Vector(x, y), fixed, killer, updatingScript) {
     override fun paint(g2d: Graphics2D) {
         g2d.color = color
-        g2d.fillRect(pos.x.toInt(), pos.y.toInt(), width, height)
+        g2d.fillRect(x.toInt(), y.toInt(), width, height)
     }
 }
 
@@ -134,21 +134,21 @@ class GroundSegment(
         g2d.fill(decorationShape)
 
         g2d.color = Color.WHITE
-        g2d.drawRect(pos.x.toInt(), pos.y.toInt(), width, height)
+        g2d.drawRect(x.toInt(), y.toInt(), width, height)
     }
 
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
         // top
-        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 25) {
+        if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
+            if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
                 return CollisionEvent(player, CollisionSide.TOP, this)
             }
         }
         // left
-        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+        if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
+            if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
@@ -174,14 +174,14 @@ class CeilingSegment(
         val dimension = player.dimension
 
         // bottom
-        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 10) {
+        if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
+            if (pos.y <= y + this.height && pos.y >= y + height - 10) {
                 return CollisionEvent(player, CollisionSide.BOTTOM, this)
             }
         }
         // left
-        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+        if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
+            if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
@@ -228,8 +228,8 @@ class Square(
         super.paint(g2d)
         // decoration
 
-        val x = pos.x.toFloat()
-        val y = pos.y.toFloat()
+        val x = x.toFloat()
+        val y = y.toFloat()
 
         // side note: I just realized that there is probably no need to back up the paint as every time a gradient is
         // used a new paint is set, plus the fact that it does not affect the color
@@ -264,20 +264,20 @@ class Square(
         val pos = player.pos
         val dimension = player.dimension
         // top
-        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 25) {
+        if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
+            if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
                 return CollisionEvent(player, CollisionSide.TOP, this)
             }
         }
         // bottom
-        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y <= this.pos.y + this.height && pos.y >= this.pos.y + height - 20) {
+        if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
+            if (pos.y <= y + this.height && pos.y >= y + height - 20) {
                 return CollisionEvent(player, CollisionSide.BOTTOM, this)
             }
         }
         // left
-        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+        if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
+            if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
@@ -301,25 +301,25 @@ class Triangle(
 
     init {
         if (faceUp) {
-            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
-            triangle.addPoint((pos.x + width).toInt(), pos.y.toInt())
-            triangle.addPoint((pos.x + width / 2).toInt(), (pos.y - height).toInt())
-            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+            triangle.addPoint(x, y)
+            triangle.addPoint(x + width, y)
+            triangle.addPoint(x + width / 2, y - height)
+            triangle.addPoint(x, y)
         } else {
-            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
-            triangle.addPoint((pos.x + width).toInt(), pos.y.toInt())
-            triangle.addPoint((pos.x + width / 2).toInt(), (pos.y + height).toInt())
-            triangle.addPoint(pos.x.toInt(), pos.y.toInt())
+            triangle.addPoint(x, y)
+            triangle.addPoint(x + width, y)
+            triangle.addPoint(x + width / 2, y + height)
+            triangle.addPoint(x, y)
         }
     }
 
     override fun paint(g2d: Graphics2D) {
         g2d.paint = if (faceUp) GradientPaint(
-            pos.x.toFloat(), (pos.y - height).toFloat(), Color.BLACK,
-            pos.x.toFloat(), pos.y.toFloat(), this.color
+            x.toFloat(), (y - height).toFloat(), Color.BLACK,
+            x.toFloat(), y.toFloat(), this.color
         ) else GradientPaint(
-            pos.x.toFloat(), (pos.y + height).toFloat(), Color.BLACK,
-            pos.x.toFloat(), pos.y.toFloat(), this.color
+            x.toFloat(), (y + height).toFloat(), Color.BLACK,
+            x.toFloat(), y.toFloat(), this.color
         )
         g2d.fill(triangle)
         // white boundary
@@ -328,8 +328,8 @@ class Triangle(
     }
 
     override fun detectCollision(player: Player): CollisionEvent? {
-        val x = player.pos.x.toInt()
-        val y = player.pos.y.toInt()
+        val x = player.x.toInt()
+        val y = player.y.toInt()
         val width = player.dimension.width
         val height = player.dimension.height
         if (triangle.intersects(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())) {
@@ -355,21 +355,21 @@ class MutableGroundSegment(
         g2d.fill(java.awt.Rectangle(x.toInt(), y.toInt(), width, if (height < 200) height else 200))
 
         g2d.color = Color.WHITE
-        g2d.drawRect(pos.x.toInt(), pos.y.toInt(), width, height)
+        g2d.drawRect(x.toInt(), y.toInt(), width, height)
     }
 
     override fun detectCollision(player: Player): CollisionEvent? {
         val pos = player.pos
         val dimension = player.dimension
         // top
-        if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
-            if (pos.y + dimension.height >= this.pos.y && pos.y + dimension.height <= this.pos.y + 25) {
+        if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
+            if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
                 return CollisionEvent(player, CollisionSide.TOP, this)
             }
         }
         // left
-        if (pos.y + dimension.height >= this.pos.y && pos.y <= this.pos.y + this.height) {
-            if (pos.x + dimension.width >= this.pos.x && pos.x <= this.pos.x + this.width) {
+        if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
+            if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
                 return CollisionEvent(player, CollisionSide.LEFT, this)
             }
         }
