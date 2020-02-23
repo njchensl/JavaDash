@@ -437,6 +437,9 @@ class MainFrame : JFrame() {
                 val faceUp = element.getByName("up").toBoolean()
                 return primCon.call(x, y, faceUp, color, scriptInstance) as Triangle
             }
+            GravityReverser::class -> {
+                return primCon.call(x, y, color, scriptInstance) as GravityReverser
+            }
             else -> {
                 OptionPane.showMessageDialog("Error", "Unexpected class type: $klass")
                 return null

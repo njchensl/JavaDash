@@ -3,11 +3,11 @@ package javadash.game
 import javadash.util.Vector
 import java.awt.event.KeyEvent
 
-enum class CollisionSide(x: Int) {
-    LEFT(0), TOP(1), RIGHT(2), BOTTOM(3)
+enum class CollisionMode(x: Int) {
+    LEFT(0), SLIDING(1), RIGHT(2), REFLECT(3)
 }
 
-data class CollisionEvent(val player: Player, val collisionSide: CollisionSide, val gameObject: AbstractGameObject)
+data class CollisionEvent(val player: Player, val collisionMode: CollisionMode, val gameObject: AbstractGameObject)
 
 /**
  * ways of moving the player around in the scene
@@ -25,7 +25,7 @@ class DefaultPlayerMode : PlayerMode {
      * reserved for top collisions
      */
     @Volatile
-    private var sliding: Boolean = false
+    var sliding: Boolean = false
     private var slidingHeight: Int = 0
 
     private var jump: Boolean = false
@@ -53,20 +53,20 @@ class DefaultPlayerMode : PlayerMode {
     override fun resolveCollision(collisionEvent: CollisionEvent) {
         val player = collisionEvent.player
         val gameObject = collisionEvent.gameObject
-        val collisionSide = collisionEvent.collisionSide
+        val collisionSide = collisionEvent.collisionMode
         if (gameObject.isKiller) {
             player.kill()
         }
         when (collisionSide) {
-            CollisionSide.TOP -> {
+            CollisionMode.SLIDING -> {
                 // sliding
                 sliding = true
                 slidingHeight = gameObject.pos.y.toInt()
             }
-            CollisionSide.LEFT -> {
+            CollisionMode.LEFT -> {
                 player.kill()
             }
-            CollisionSide.BOTTOM -> {
+            CollisionMode.REFLECT -> {
                 player.vel = Vector(player.vel.x, -player.vel.y)
                 if (gameObject is Rectangle) {
                     player.pos = Vector(player.pos.x, gameObject.pos.y + gameObject.height + 1)

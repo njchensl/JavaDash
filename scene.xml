@@ -1,5 +1,13 @@
 <?xml version = "1.0"?>
 <map background="https://wallpaperplay.com/walls/full/8/c/5/124567.jpg">
+    <object type="GravityReverser" layer="7">
+        <x>530</x>
+        <y>400</y>
+    </object>
+    <object type="GravityReverser" layer="7">
+        <x>630</x>
+        <y>300</y>
+    </object>
     <array length="5">
         <object type="GroundSegment" layer="8">
             <x>0</x>
@@ -85,6 +93,30 @@
             <x>2600</x>
             <y>600</y>
             <up>true</up>
+        </object>
+    </array>
+    <array length="4">
+        <object type="Square" layer="8">
+            <x>2700</x>
+            <y>400</y>
+        </object>
+    </array>
+    <array length="3">
+        <object type="Square" layer="8">
+            <x>2900</x>
+            <y>300</y>
+        </object>
+    </array>
+    <array length="5">
+        <object type="Square" layer="8">
+            <x>3000</x>
+            <y>400</y>
+        </object>
+    </array>
+    <array length="4">
+        <object type="Square" layer="8">
+            <x>3300</x>
+            <y>300</y>
         </object>
     </array>
 </map>

@@ -2,12 +2,10 @@ package javadash.game
 
 import javadash.Main
 import javadash.ui.Displayable
-import javadash.ui.OptionPane
 import javadash.util.Vector
 import java.awt.*
 import java.awt.event.KeyEvent
 import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 /**
  * for all non player rigid body game objects
@@ -53,7 +51,7 @@ abstract class AbstractGameObject(
  * the player
  */
 class Player(pos: Vector, val dimension: Dimension = Dimension(34, 34)) : AbstractGameObject(pos) {
-    private var playerMode: PlayerMode = DefaultPlayerMode()
+    var playerMode: PlayerMode = DefaultPlayerMode()
 
     init {
         acc = Vector(0, 10000)
@@ -143,13 +141,13 @@ class GroundSegment(
         // top
         if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
             if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
-                return CollisionEvent(player, CollisionSide.TOP, this)
+                return CollisionEvent(player, CollisionMode.SLIDING, this)
             }
         }
         // left
         if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
             if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
-                return CollisionEvent(player, CollisionSide.LEFT, this)
+                return CollisionEvent(player, CollisionMode.LEFT, this)
             }
         }
 
@@ -176,13 +174,13 @@ class CeilingSegment(
         // bottom
         if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
             if (pos.y <= y + this.height && pos.y >= y + height - 10) {
-                return CollisionEvent(player, CollisionSide.BOTTOM, this)
+                return CollisionEvent(player, CollisionMode.REFLECT, this)
             }
         }
         // left
         if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
             if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
-                return CollisionEvent(player, CollisionSide.LEFT, this)
+                return CollisionEvent(player, CollisionMode.LEFT, this)
             }
         }
         return null
@@ -266,19 +264,19 @@ class Square(
         // top
         if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
             if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
-                return CollisionEvent(player, CollisionSide.TOP, this)
+                return CollisionEvent(player, CollisionMode.SLIDING, this)
             }
         }
         // bottom
         if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
             if (pos.y <= y + this.height && pos.y >= y + height - 20) {
-                return CollisionEvent(player, CollisionSide.BOTTOM, this)
+                return CollisionEvent(player, CollisionMode.REFLECT, this)
             }
         }
         // left
         if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
             if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
-                return CollisionEvent(player, CollisionSide.LEFT, this)
+                return CollisionEvent(player, CollisionMode.LEFT, this)
             }
         }
         return null
@@ -333,7 +331,7 @@ class Triangle(
         val width = player.dimension.width
         val height = player.dimension.height
         if (triangle.intersects(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())) {
-            return CollisionEvent(player, CollisionSide.LEFT, this)
+            return CollisionEvent(player, CollisionMode.LEFT, this)
         }
         return null
     }
@@ -364,16 +362,58 @@ class MutableGroundSegment(
         // top
         if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
             if (pos.y + dimension.height >= y && pos.y + dimension.height <= y + 25) {
-                return CollisionEvent(player, CollisionSide.TOP, this)
+                return CollisionEvent(player, CollisionMode.SLIDING, this)
             }
         }
         // left
         if (pos.y + dimension.height >= y && pos.y <= y + this.height) {
             if (pos.x + dimension.width >= x && pos.x <= x + this.width) {
-                return CollisionEvent(player, CollisionSide.LEFT, this)
+                return CollisionEvent(player, CollisionMode.LEFT, this)
             }
         }
 
+        return null
+    }
+}
+
+class GravityReverser(
+    x: Int,
+    y: Int,
+    color: Color = Color.BLUE,
+    updatingScript: BiConsumer<AbstractGameObject, Int> = BiConsumer { _, _ -> }
+) : Rectangle(
+    x,
+    y,
+    40,
+    40,
+    true,
+    false,
+    color,
+    updatingScript
+), RigidBody {
+    var used = false
+    private val rect = java.awt.Rectangle(x, y, width, height)
+
+    override fun paint(g2d: Graphics2D) {
+        if (!used) {
+            g2d.color = color
+            g2d.fill(rect)
+            g2d.color = Color.WHITE
+            g2d.draw(rect)
+        }
+    }
+
+    override fun detectCollision(player: Player): CollisionEvent? {
+        val playerRect = java.awt.Rectangle(player.x.toInt(), player.y.toInt(), 34, 34)
+        if (!used && rect.intersects(playerRect)) {
+            used = true
+            if (player.playerMode is DefaultPlayerMode) {
+                (player.playerMode as DefaultPlayerMode).sliding = false
+            }
+
+            player.pos = Vector(player.x, this.y)
+            player.acc = Vector(player.acc.x, -player.acc.y)
+        }
         return null
     }
 }
