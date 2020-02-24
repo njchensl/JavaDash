@@ -3,11 +3,11 @@ package javadash.game
 import javadash.util.Vector
 import java.awt.event.KeyEvent
 
-enum class CollisionMode(x: Int) {
-    LEFT(0), SLIDING(1), RIGHT(2), REFLECT(3)
+enum class CollisionSide(x: Int) {
+    LEFT(0), TOP(1), RIGHT(2), BOTTOM(3)
 }
 
-data class CollisionEvent(val player: Player, val collisionMode: CollisionMode, val gameObject: AbstractGameObject)
+data class CollisionEvent(val player: Player, val collisionSide: CollisionSide, val gameObject: AbstractGameObject)
 
 /**
  * ways of moving the player around in the scene
@@ -53,20 +53,20 @@ class DefaultPlayerMode : PlayerMode {
     override fun resolveCollision(collisionEvent: CollisionEvent) {
         val player = collisionEvent.player
         val gameObject = collisionEvent.gameObject
-        val collisionSide = collisionEvent.collisionMode
+        val collisionSide = collisionEvent.collisionSide
         if (gameObject.isKiller) {
             player.kill()
         }
         when (collisionSide) {
-            CollisionMode.SLIDING -> {
+            CollisionSide.TOP -> {
                 // sliding
                 sliding = true
                 slidingHeight = gameObject.pos.y.toInt()
             }
-            CollisionMode.LEFT -> {
+            CollisionSide.LEFT -> {
                 player.kill()
             }
-            CollisionMode.REFLECT -> {
+            CollisionSide.BOTTOM -> {
                 player.vel = Vector(player.vel.x, -player.vel.y)
                 if (gameObject is Rectangle) {
                     player.pos = Vector(player.pos.x, gameObject.pos.y + gameObject.height + 1)
